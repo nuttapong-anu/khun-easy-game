@@ -1,0 +1,2531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Sky Pilot Adventure</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Comic Sans MS", "Chalkboard", sans-serif;
+        overflow: hidden;
+        background: linear-gradient(180deg, #87ceeb 0%, #e0f6ff 100%);
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+
+      #gameCanvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      /* Selection Screen */
+      #selectionScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        background: linear-gradient(
+          180deg,
+          #4a90d9 0%,
+          #87ceeb 50%,
+          #e0f6ff 100%
+        );
+        z-index: 100;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 10px;
+      }
+
+      #selectionScreen h1 {
+        font-size: 2.5rem;
+        color: #fff;
+        text-shadow: 3px 3px 0 #2c5aa0;
+        margin-bottom: 15px;
+        margin-top: 10px;
+        animation: bounce 2s infinite;
+        text-align: center;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+      }
+
+      .plane-selection {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 15px;
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      .plane-card {
+        width: 160px;
+        padding: 15px;
+        background: white;
+        border-radius: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        border: 4px solid transparent;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .plane-card:hover {
+        transform: scale(1.08) translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .plane-card.locked {
+        cursor: not-allowed;
+        opacity: 0.9;
+      }
+
+      .plane-card.locked:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .lock-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 11px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        margin: 4px;
+      }
+
+      .lock-overlay.hidden {
+        display: none !important;
+      }
+
+      .lock-icon {
+        font-size: 2.5rem;
+        margin-bottom: 8px;
+      }
+
+      .unlock-text {
+        color: #ffd700;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-align: center;
+        padding: 0 8px;
+        line-height: 1.3;
+      }
+
+      .plane-content {
+        width: 100%;
+        height: 100%;
+      }
+
+      .plane-content.hidden {
+        display: none !important;
+      }
+
+      .plane-card.green {
+        border-color: #4caf50;
+      }
+      .plane-card.blue {
+        border-color: #2196f3;
+      }
+      .plane-card.red {
+        border-color: #f44336;
+      }
+
+      .plane-icon {
+        font-size: 3rem;
+        margin-bottom: 5px;
+      }
+
+      .plane-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+      }
+
+      .plane-card.green h3 {
+        color: #4caf50;
+      }
+      .plane-card.blue h3 {
+        color: #2196f3;
+      }
+      .plane-card.red h3 {
+        color: #f44336;
+      }
+
+      .plane-stats {
+        font-size: 0.75rem;
+        color: #555;
+        line-height: 1.4;
+      }
+
+      .stat-bar {
+        display: flex;
+        align-items: center;
+        margin: 3px 0;
+      }
+
+      .stat-label {
+        width: 50px;
+        text-align: left;
+      }
+
+      .stat-value {
+        display: flex;
+        gap: 2px;
+      }
+
+      .star {
+        color: #ffd700;
+        font-size: 0.85rem;
+      }
+
+      .difficulty {
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+      }
+
+      .plane-card.green .difficulty {
+        background: #c8e6c9;
+        color: #2e7d32;
+      }
+      .plane-card.blue .difficulty {
+        background: #bbdefb;
+        color: #1565c0;
+      }
+      .plane-card.red .difficulty {
+        background: #ffcdd2;
+        color: #c62828;
+      }
+      .plane-card.purple {
+        border-color: #9c27b0;
+      }
+      .plane-card.purple h3 {
+        color: #9c27b0;
+      }
+      .plane-card.purple .difficulty {
+        background: #e1bee7;
+        color: #7b1fa2;
+      }
+
+      .instructions {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #fff;
+        font-size: 1rem;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        padding: 0 10px;
+      }
+
+      .instructions p {
+        margin: 5px 0;
+      }
+
+      .high-score-display {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background: rgba(255, 215, 0, 0.9);
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .high-distance-display {
+        margin-top: 5px;
+        margin-bottom: 20px;
+        background: rgba(100, 181, 246, 0.9);
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      /* HUD */
+      #hud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px 25px;
+        display: none;
+        pointer-events: none;
+        z-index: 50;
+      }
+
+      .hud-left {
+        position: absolute;
+        top: 15px;
+        left: 25px;
+      }
+
+      .hud-right {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+      }
+
+      .bar-container {
+        margin-bottom: 12px;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 6px 12px;
+        border-radius: 15px;
+        backdrop-filter: blur(5px);
+      }
+
+      .bar-label {
+        color: white;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .bar {
+        width: 180px;
+        height: 18px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 9px;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .bar-fill {
+        height: 100%;
+        transition: width 0.1s linear;
+        border-radius: 7px;
+      }
+
+      .fuel-bar {
+        background: linear-gradient(90deg, #ff9800, #ffc107);
+      }
+      .hp-bar {
+        background: linear-gradient(90deg, #f44336, #ff5722);
+      }
+      .hp-bar.low {
+        background: linear-gradient(90deg, #d32f2f, #f44336);
+        animation: pulse 0.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+
+      .score-display {
+        background: rgba(255, 215, 0, 0.9);
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .coin-icon {
+        font-size: 1.4rem;
+      }
+
+      .distance-display {
+        background: rgba(100, 181, 246, 0.9);
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .distance-icon {
+        font-size: 1.2rem;
+      }
+
+      .exit-btn {
+        margin-top: 10px;
+        padding: 8px 18px;
+        font-size: 0.95rem;
+        background: linear-gradient(180deg, #f44336, #d32f2f);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+        font-family: inherit;
+        font-weight: bold;
+        pointer-events: auto;
+      }
+
+      .exit-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(244, 67, 54, 0.5);
+      }
+
+      /* Game Over Screen */
+      #gameOverScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 200;
+        padding: 20px;
+        text-align: center;
+      }
+
+      #gameOverScreen h2 {
+        font-size: 2.8rem;
+        color: #ff6b6b;
+        margin-bottom: 15px;
+        text-shadow: 3px 3px 0 #8b0000;
+        line-height: 1.2;
+      }
+
+      .final-score {
+        font-size: 1.8rem;
+        color: #ffd700;
+        margin-bottom: 10px;
+      }
+
+      .distance-result {
+        font-size: 1.4rem;
+        color: #64b5f6;
+        margin-bottom: 10px;
+      }
+
+      .high-score {
+        font-size: 1.1rem;
+        color: #aaa;
+        margin-bottom: 10px;
+      }
+
+      .best-distance {
+        font-size: 1rem;
+        color: #64b5f6;
+        margin-bottom: 30px;
+      }
+
+      /* Unlock Modal */
+      #unlockModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(
+          135deg,
+          rgba(106, 27, 154, 0.95),
+          rgba(69, 39, 160, 0.95)
+        );
+        z-index: 300;
+        padding: 20px;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          transform: scale(1);
+          filter: brightness(1);
+        }
+        50% {
+          transform: scale(1.1);
+          filter: brightness(1.3);
+        }
+      }
+
+      #unlockModal h2 {
+        font-size: 2.5rem;
+        color: #ffd700;
+        margin-bottom: 10px;
+        text-shadow: 3px 3px 0 #6a1b9a;
+        animation: bounce 1s infinite;
+      }
+
+      .unlock-message {
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 30px;
+      }
+
+      .unlock-plane-icon {
+        font-size: 8rem;
+        margin-bottom: 20px;
+        animation: pulse-glow 2s infinite;
+        filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+      }
+
+      .unlock-stats {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px 40px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(10px);
+      }
+
+      .unlock-stats h3 {
+        font-size: 2rem;
+        color: #e1bee7;
+        margin-bottom: 15px;
+      }
+
+      .unlock-stat-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 8px 0;
+        font-size: 1.2rem;
+        color: #fff;
+      }
+
+      .unlock-btn {
+        padding: 18px 50px;
+        font-size: 1.4rem;
+        background: linear-gradient(180deg, #ffd700, #ffa000);
+        color: #333;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+        font-family: inherit;
+        font-weight: bold;
+      }
+
+      .unlock-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.7);
+      }
+
+      @media (max-width: 768px) {
+        #unlockModal h2 {
+          font-size: 1.8rem;
+        }
+
+        .unlock-message {
+          font-size: 1.1rem;
+          margin-bottom: 20px;
+        }
+
+        .unlock-plane-icon {
+          font-size: 5rem;
+        }
+
+        .unlock-stats {
+          padding: 15px 25px;
+        }
+
+        .unlock-stats h3 {
+          font-size: 1.5rem;
+        }
+
+        .unlock-stat-row {
+          font-size: 1rem;
+        }
+
+        .unlock-btn {
+          padding: 14px 35px;
+          font-size: 1.1rem;
+        }
+      }
+
+      .restart-btn {
+        padding: 15px 40px;
+        font-size: 1.3rem;
+        background: linear-gradient(180deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+        font-family: inherit;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .restart-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.5);
+      }
+
+      /* Touch hint for mobile */
+      .touch-hint {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        display: none;
+        pointer-events: none;
+        z-index: 40;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 8px 16px;
+        border-radius: 20px;
+        backdrop-filter: blur(4px);
+      }
+
+      @media (max-width: 768px) {
+        #selectionScreen h1 {
+          font-size: 1.8rem;
+          margin-top: 10px;
+          margin-bottom: 10px;
+        }
+
+        .plane-selection {
+          flex-direction: row;
+          gap: 8px;
+          justify-content: center;
+        }
+
+        .plane-card {
+          width: 90px;
+          padding: 8px;
+          border-width: 3px;
+        }
+
+        .plane-icon {
+          font-size: 2rem;
+        }
+
+        .plane-card h3 {
+          font-size: 0.85rem;
+        }
+
+        .plane-stats {
+          font-size: 0.65rem;
+        }
+
+        .stat-label {
+          width: 35px;
+        }
+
+        .star {
+          font-size: 0.7rem;
+        }
+
+        .difficulty {
+          font-size: 0.6rem;
+          padding: 3px 6px;
+          margin-top: 5px;
+        }
+
+        .instructions {
+          font-size: 0.85rem;
+          margin-top: 15px;
+          margin-bottom: 8px;
+        }
+
+        .instructions p:last-child {
+          font-size: 0.75em !important;
+        }
+
+        .high-score-display {
+          font-size: 1rem;
+          padding: 8px 18px;
+          margin-bottom: 8px;
+        }
+
+        .high-distance-display {
+          font-size: 0.9rem;
+          padding: 6px 14px;
+          margin-bottom: 12px;
+        }
+
+        .touch-hint {
+          display: block;
+          font-size: 0.75rem;
+          bottom: 10px;
+          padding: 6px 12px;
+        }
+
+        /* HUD mobile adjustments */
+        .bar-container {
+          padding: 4px 8px;
+          margin-bottom: 8px;
+        }
+
+        .bar {
+          width: 120px;
+          height: 14px;
+        }
+
+        .bar-label {
+          font-size: 0.75rem;
+        }
+
+        .score-display {
+          padding: 8px 15px;
+          font-size: 1.2rem;
+          margin-bottom: 6px;
+        }
+
+        .distance-display {
+          padding: 6px 12px;
+          font-size: 1rem;
+        }
+
+        .exit-btn {
+          padding: 6px 14px;
+          font-size: 0.8rem;
+          margin-top: 8px;
+        }
+
+        .lock-icon {
+          font-size: 1.8rem;
+          margin-bottom: 4px;
+        }
+
+        .unlock-text {
+          font-size: 0.6rem;
+          padding: 0 4px;
+        }
+
+        .lock-overlay {
+          border-radius: 9px;
+          margin: 3px;
+        }
+
+        .hud-left,
+        .hud-right {
+          top: 10px;
+        }
+
+        .hud-left {
+          left: 10px;
+        }
+
+        .hud-right {
+          right: 10px;
+        }
+
+        /* Game Over mobile adjustments */
+        #gameOverScreen h2 {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .final-score {
+          font-size: 1.3rem;
+          margin-bottom: 8px;
+        }
+
+        .distance-result {
+          font-size: 1.1rem;
+          margin-bottom: 8px;
+        }
+
+        .high-score {
+          font-size: 0.9rem;
+          margin-bottom: 5px;
+        }
+
+        .best-distance {
+          font-size: 0.85rem;
+          margin-bottom: 20px;
+        }
+
+        .restart-btn {
+          padding: 12px 30px;
+          font-size: 1.1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .plane-selection {
+          gap: 6px;
+        }
+
+        .plane-card {
+          width: 80px;
+          padding: 6px;
+        }
+
+        .plane-icon {
+          font-size: 1.6rem;
+        }
+
+        .lock-icon {
+          font-size: 1.4rem;
+          margin-bottom: 2px;
+        }
+
+        .unlock-text {
+          font-size: 0.5rem;
+          padding: 0 2px;
+        }
+
+        .lock-overlay {
+          border-radius: 7px;
+          margin: 2px;
+        }
+
+        .plane-card h3 {
+          font-size: 0.8rem;
+        }
+
+        #selectionScreen h1 {
+          font-size: 1.5rem;
+        }
+
+        .instructions {
+          font-size: 0.75rem;
+          margin-bottom: 5px;
+        }
+
+        .instructions p:last-child {
+          font-size: 0.7em !important;
+        }
+
+        .high-score-display {
+          font-size: 0.9rem;
+          padding: 6px 14px;
+          margin-bottom: 5px;
+        }
+
+        .high-distance-display {
+          font-size: 0.8rem;
+          padding: 5px 12px;
+          margin-bottom: 8px;
+        }
+
+        .lock-icon {
+          font-size: 2.2rem;
+        }
+
+        .unlock-text {
+          font-size: 0.7rem;
+        }
+
+        .lock-overlay {
+          border-radius: 10px;
+          margin: 3px;
+        }
+      }
+
+      @media (min-width: 769px) {
+        .plane-selection {
+          gap: 20px;
+        }
+
+        .plane-card {
+          width: 200px;
+          padding: 22px;
+        }
+
+        .plane-icon {
+          font-size: 4rem;
+        }
+
+        .plane-card h3 {
+          font-size: 1.4rem;
+        }
+
+        .plane-stats {
+          font-size: 0.9rem;
+        }
+
+        .star {
+          font-size: 1.1rem;
+        }
+
+        .difficulty {
+          font-size: 0.85rem;
+          padding: 5px 15px;
+        }
+
+        .instructions {
+          font-size: 1.2rem;
+        }
+
+        .high-score-display {
+          font-size: 1.4rem;
+          padding: 12px 30px;
+          margin-bottom: 10px;
+        }
+
+        .high-distance-display {
+          font-size: 1.2rem;
+          padding: 10px 25px;
+        }
+
+        .distance-display {
+          font-size: 1.4rem;
+          padding: 12px 25px;
+        }
+
+        .exit-btn {
+          padding: 10px 22px;
+          font-size: 1.1rem;
+          margin-top: 12px;
+        }
+
+        .lock-overlay {
+          border-radius: 15px;
+          margin: 4px;
+        }
+
+        .lock-icon {
+          font-size: 3.5rem;
+          margin-bottom: 10px;
+        }
+
+        .unlock-text {
+          font-size: 0.9rem;
+          padding: 0 15px;
+        }
+      }
+
+      .home-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        color: #4a90d9;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        z-index: 200;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .home-btn:hover {
+        transform: scale(1.1);
+      }
+      @media (max-width: 768px) {
+        .home-btn {
+          top: 10px;
+          left: 10px;
+          padding: 6px 14px;
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Selection Screen -->
+    <div id="selectionScreen">
+      <a href="index.html" class="home-btn" onclick="event.stopPropagation()"
+        >🏠 Home</a
+      >
+      <h1>✈️ Sky Pilot Adventure ✈️</h1>
+      <div class="plane-selection">
+        <div class="plane-card green" onclick="startGame('propeller')">
+          <div class="plane-icon">🛩️</div>
+          <h3>Propeller</h3>
+          <div class="plane-stats">
+            <div class="stat-bar">
+              <span class="stat-label">Speed:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">☆</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">Fuel:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">HP:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+              </span>
+            </div>
+          </div>
+          <div class="difficulty">EASY - For Beginners</div>
+        </div>
+        <div class="plane-card blue" onclick="startGame('jumbo')">
+          <div class="plane-icon">✈️</div>
+          <h3>Jumbo Jet</h3>
+          <div class="plane-stats">
+            <div class="stat-bar">
+              <span class="stat-label">Speed:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">Fuel:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">☆</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">HP:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+              </span>
+            </div>
+          </div>
+          <div class="difficulty">BALANCED - Great for All</div>
+        </div>
+        <div class="plane-card red" onclick="startGame('supersonic')">
+          <div class="plane-icon">🚀</div>
+          <h3>Super Sonic</h3>
+          <div class="plane-stats">
+            <div class="stat-bar">
+              <span class="stat-label">Speed:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">Fuel:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">☆</span>
+                <span class="star">☆</span>
+              </span>
+            </div>
+            <div class="stat-bar">
+              <span class="stat-label">HP:</span>
+              <span class="stat-value">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">☆</span>
+              </span>
+            </div>
+          </div>
+          <div class="difficulty">CHALLENGE - For Experts</div>
+        </div>
+        <div
+          class="plane-card purple"
+          id="a350Card"
+          onclick="tryStartGame('a350')"
+        >
+          <div class="lock-overlay" id="a350Lock">
+            <div class="lock-icon">🔒</div>
+            <div class="unlock-text">Fly 25,000m to unlock!</div>
+          </div>
+          <div class="plane-content" id="a350Content">
+            <div class="plane-icon">✈️</div>
+            <h3>Airbus A350</h3>
+            <div class="plane-stats">
+              <div class="stat-bar">
+                <span class="stat-label">Speed:</span>
+                <span class="stat-value">
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                </span>
+              </div>
+              <div class="stat-bar">
+                <span class="stat-label">Fuel:</span>
+                <span class="stat-value">
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">☆</span>
+                  <span class="star">☆</span>
+                </span>
+              </div>
+              <div class="stat-bar">
+                <span class="stat-label">HP:</span>
+                <span class="stat-value">
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">★</span>
+                  <span class="star">☆</span>
+                </span>
+              </div>
+            </div>
+            <div class="difficulty">LEGENDARY - Reach 25km</div>
+          </div>
+        </div>
+      </div>
+      <div class="instructions">
+        <p>🎮 Hold <b>SPACEBAR</b> or <b>CLICK/TOUCH</b> to fly up 🎮</p>
+        <p>Collect coins ⭐ fuel ⛽ hearts ❤️ | Avoid storm clouds ⛈️</p>
+        <p style="font-size: 0.85em; margin-top: 5px; opacity: 0.9">
+          💡 Items become rarer as you fly further!
+        </p>
+      </div>
+      <div class="high-score-display">
+        <span>🏆</span>
+        <span>High Score: <span id="menuHighScore">0</span></span>
+      </div>
+      <div class="high-distance-display">
+        <span>📏</span>
+        <span>Best Distance: <span id="menuHighDistance">0</span> m</span>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-left">
+        <div class="bar-container">
+          <div class="bar-label">
+            <span>⛽ Fuel</span>
+            <span id="fuelText">100%</span>
+          </div>
+          <div class="bar">
+            <div
+              id="fuelBar"
+              class="bar-fill fuel-bar"
+              style="width: 100%"
+            ></div>
+          </div>
+        </div>
+        <div class="bar-container">
+          <div class="bar-label">
+            <span>❤️ HP</span>
+            <span id="hpText">3/3</span>
+          </div>
+          <div class="bar">
+            <div id="hpBar" class="bar-fill hp-bar" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="score-display">
+          <span class="coin-icon">⭐</span>
+          <span id="score">0</span>
+        </div>
+        <div class="distance-display">
+          <span class="distance-icon">📏</span>
+          <span id="distance">0 m</span>
+        </div>
+        <button class="exit-btn" onclick="confirmExit()">✕ Exit</button>
+      </div>
+    </div>
+
+    <div class="touch-hint">Tap and hold to fly up</div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+      <h2>💥 GAME OVER 💥</h2>
+      <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+      <div class="distance-result">
+        Distance: <span id="finalDistance">0</span> m
+      </div>
+      <div class="high-score">High Score: <span id="highScore">0</span></div>
+      <div class="best-distance">
+        Best Distance: <span id="bestDistance">0</span> m
+      </div>
+      <button class="restart-btn" onclick="resetGame()">🔄 Play Again</button>
+    </div>
+
+    <!-- Unlock Modal -->
+    <div id="unlockModal">
+      <h2>🎉 UNLOCKED! 🎉</h2>
+      <div class="unlock-message">You have unlocked a new aircraft!</div>
+      <div class="unlock-plane-icon">✈️</div>
+      <div class="unlock-stats">
+        <h3>Airbus A350</h3>
+        <div class="unlock-stat-row">
+          <span>Speed:</span>
+          <span style="color: #ffd700">★★★★★</span>
+        </div>
+        <div class="unlock-stat-row">
+          <span>Fuel:</span>
+          <span style="color: #ffd700">★★★☆☆</span>
+        </div>
+        <div class="unlock-stat-row">
+          <span>HP:</span>
+          <span style="color: #ffd700">★★★★☆</span>
+        </div>
+      </div>
+      <button class="unlock-btn" onclick="closeUnlockModal()">
+        Awesome! 🚀
+      </button>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+      // Game Constants
+      const CANVAS = document.getElementById("gameCanvas");
+      const CTX = CANVAS.getContext("2d");
+
+      // Plane types configuration
+      const PLANE_TYPES = {
+        propeller: {
+          name: "Propeller",
+          color: "#4CAF50",
+          secondaryColor: "#2E7D32",
+          speed: 3,
+          fuelConsumption: 0.03,
+          maxFuel: 100,
+          maxHP: 3,
+          size: { w: 70, h: 45 },
+          lift: 0.6,
+          gravity: 0.25,
+          unlockDistance: 0,
+        },
+        jumbo: {
+          name: "Jumbo Jet",
+          color: "#2196F3",
+          secondaryColor: "#1565C0",
+          speed: 4.5,
+          fuelConsumption: 0.05,
+          maxFuel: 100,
+          maxHP: 5,
+          size: { w: 90, h: 55 },
+          lift: 0.55,
+          gravity: 0.28,
+          unlockDistance: 0,
+        },
+        supersonic: {
+          name: "Super Sonic",
+          color: "#F44336",
+          secondaryColor: "#C62828",
+          speed: 7,
+          fuelConsumption: 0.12,
+          maxFuel: 100,
+          maxHP: 2,
+          size: { w: 80, h: 35 },
+          lift: 0.7,
+          gravity: 0.22,
+          unlockDistance: 0,
+        },
+        a350: {
+          name: "Airbus A350",
+          color: "#9C27B0",
+          secondaryColor: "#7B1FA2",
+          speed: 5.5,
+          fuelConsumption: 0.05,
+          maxFuel: 100,
+          maxHP: 4,
+          size: { w: 95, h: 50 },
+          lift: 0.6,
+          gravity: 0.24,
+          unlockDistance: 25000,
+        },
+      };
+
+      // Game State
+      let gameState = {
+        isPlaying: false,
+        score: 0,
+        distance: 0,
+        highScore: parseInt(localStorage.getItem("skyPilotHighScore")) || 0,
+        highDistance:
+          parseInt(localStorage.getItem("skyPilotHighDistance")) || 0,
+        plane: null,
+        clouds: [],
+        items: [],
+        obstacles: [],
+        particles: [],
+        backgroundOffset: 0,
+        lastTime: 0,
+        unlockNotified: localStorage.getItem("skyPilotA350Notified") === "true",
+        justUnlocked: false,
+      };
+
+      // Input handling
+      let input = {
+        isPressed: false,
+      };
+
+      // Plane Class
+      class Plane {
+        constructor(type) {
+          const config = PLANE_TYPES[type];
+          this.type = type;
+          this.x = 100;
+          this.y = CANVAS.height / 2;
+          this.velocity = 0;
+          this.width = config.size.w;
+          this.height = config.size.h;
+          this.color = config.color;
+          this.secondaryColor = config.secondaryColor;
+          this.speed = config.speed;
+          this.fuel = config.maxFuel;
+          this.maxFuel = config.maxFuel;
+          this.fuelConsumption = config.fuelConsumption;
+          this.hp = config.maxHP;
+          this.maxHP = config.maxHP;
+          this.lift = config.lift;
+          this.gravity = config.gravity;
+          this.invulnerable = 0;
+          this.propellerAngle = 0;
+        }
+
+        update() {
+          // Physics
+          if (input.isPressed && this.fuel > 0) {
+            this.velocity -= this.lift;
+            this.fuel = Math.max(0, this.fuel - this.fuelConsumption);
+            // Create engine particles
+            if (Math.random() < 0.4) {
+              createParticle(
+                this.x - 20,
+                this.y + this.height / 2,
+                -2 - Math.random() * 2,
+                (Math.random() - 0.5) * 1,
+                this.type === "supersonic" ? "#FF5722" : "#FFF",
+                15,
+              );
+            }
+          }
+
+          this.velocity += this.gravity;
+          this.velocity *= 0.98; // Air resistance
+          this.y += this.velocity;
+
+          // Boundaries
+          if (this.y < 0) {
+            this.y = 0;
+            this.velocity = 0;
+          }
+          if (this.y > CANVAS.height - this.height) {
+            this.y = CANVAS.height - this.height;
+            this.velocity = 0;
+          }
+
+          // Invulnerability countdown
+          if (this.invulnerable > 0) {
+            this.invulnerable--;
+          }
+
+          // Animate propeller
+          this.propellerAngle += 0.5;
+        }
+
+        draw() {
+          CTX.save();
+
+          // Flash when invulnerable
+          if (
+            this.invulnerable > 0 &&
+            Math.floor(this.invulnerable / 5) % 2 === 0
+          ) {
+            CTX.globalAlpha = 0.5;
+          }
+
+          // Rotate based on velocity
+          const rotation = Math.max(-0.4, Math.min(0.4, this.velocity * 0.05));
+          CTX.translate(this.x + this.width / 2, this.y + this.height / 2);
+          CTX.rotate(rotation);
+          CTX.translate(-this.width / 2, -this.height / 2);
+
+          // Draw plane based on type
+          if (this.type === "propeller") {
+            this.drawPropellerPlane();
+          } else if (this.type === "jumbo") {
+            this.drawJumboJet();
+          } else if (this.type === "supersonic") {
+            this.drawSuperSonic();
+          } else {
+            this.drawA350();
+          }
+
+          CTX.restore();
+        }
+
+        drawPropellerPlane() {
+          // Fuselage
+          CTX.fillStyle = this.color;
+          CTX.beginPath();
+          CTX.ellipse(35, 22, 35, 18, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Cockpit
+          CTX.fillStyle = "#87CEEB";
+          CTX.beginPath();
+          CTX.ellipse(45, 15, 12, 8, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Wings
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(25, 22);
+          CTX.lineTo(10, 5);
+          CTX.lineTo(25, 5);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(25, 22);
+          CTX.lineTo(10, 40);
+          CTX.lineTo(25, 40);
+          CTX.closePath();
+          CTX.fill();
+
+          // Tail
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(5, 22);
+          CTX.lineTo(-5, 8);
+          CTX.lineTo(8, 8);
+          CTX.closePath();
+          CTX.fill();
+
+          // Propeller
+          CTX.save();
+          CTX.translate(70, 22);
+          CTX.rotate(this.propellerAngle);
+          CTX.fillStyle = "#333";
+          CTX.fillRect(-2, -22, 4, 44);
+          CTX.fillRect(-22, -2, 44, 4);
+          CTX.restore();
+        }
+
+        drawJumboJet() {
+          // Main body
+          CTX.fillStyle = this.color;
+          CTX.beginPath();
+          CTX.ellipse(45, 27, 45, 22, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Cockpit windows
+          CTX.fillStyle = "#87CEEB";
+          for (let i = 0; i < 4; i++) {
+            CTX.beginPath();
+            CTX.arc(60 + i * 8, 22, 4, 0, Math.PI * 2);
+            CTX.fill();
+          }
+
+          // Passenger windows
+          CTX.fillStyle = "#333";
+          for (let i = 0; i < 5; i++) {
+            CTX.beginPath();
+            CTX.arc(30 + i * 10, 27, 2, 0, Math.PI * 2);
+            CTX.fill();
+          }
+
+          // Wings (large)
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(35, 27);
+          CTX.lineTo(15, -5);
+          CTX.lineTo(40, -5);
+          CTX.lineTo(50, 27);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(35, 27);
+          CTX.lineTo(15, 60);
+          CTX.lineTo(40, 60);
+          CTX.lineTo(50, 27);
+          CTX.closePath();
+          CTX.fill();
+
+          // Tail
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(5, 20);
+          CTX.lineTo(-10, 5);
+          CTX.lineTo(10, 5);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(5, 35);
+          CTX.lineTo(-10, 50);
+          CTX.lineTo(10, 50);
+          CTX.closePath();
+          CTX.fill();
+
+          // Engines
+          CTX.fillStyle = "#DDD";
+          CTX.beginPath();
+          CTX.ellipse(30, 5, 12, 6, 0, 0, Math.PI * 2);
+          CTX.fill();
+          CTX.beginPath();
+          CTX.ellipse(30, 50, 12, 6, 0, 0, Math.PI * 2);
+          CTX.fill();
+        }
+
+        drawSuperSonic() {
+          // Sleek body
+          CTX.fillStyle = this.color;
+          CTX.beginPath();
+          CTX.moveTo(0, 17);
+          CTX.quadraticCurveTo(20, 5, 60, 10);
+          CTX.lineTo(80, 17);
+          CTX.lineTo(60, 25);
+          CTX.quadraticCurveTo(20, 30, 0, 17);
+          CTX.closePath();
+          CTX.fill();
+
+          // Cockpit
+          CTX.fillStyle = "#333";
+          CTX.beginPath();
+          CTX.ellipse(50, 12, 8, 5, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Delta wings
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(30, 17);
+          CTX.lineTo(10, -8);
+          CTX.lineTo(35, 17);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(30, 17);
+          CTX.lineTo(10, 43);
+          CTX.lineTo(35, 17);
+          CTX.closePath();
+          CTX.fill();
+
+          // Afterburner flame
+          if (input.isPressed && this.fuel > 0) {
+            const flameLength = 30 + Math.random() * 20;
+            CTX.fillStyle = "#FF5722";
+            CTX.beginPath();
+            CTX.moveTo(0, 12);
+            CTX.lineTo(-flameLength, 17);
+            CTX.lineTo(0, 22);
+            CTX.closePath();
+            CTX.fill();
+
+            CTX.fillStyle = "#FFC107";
+            CTX.beginPath();
+            CTX.moveTo(0, 14);
+            CTX.lineTo(-flameLength * 0.6, 17);
+            CTX.lineTo(0, 20);
+            CTX.closePath();
+            CTX.fill();
+          }
+        }
+
+        drawA350() {
+          // Modern sleek body (A350 style)
+          CTX.fillStyle = this.color;
+          CTX.beginPath();
+          CTX.moveTo(10, 25);
+          CTX.quadraticCurveTo(25, 10, 70, 12);
+          CTX.lineTo(95, 18);
+          CTX.lineTo(95, 32);
+          CTX.quadraticCurveTo(25, 40, 10, 25);
+          CTX.closePath();
+          CTX.fill();
+
+          // Nose cone
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.ellipse(12, 25, 8, 6, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Cockpit windows (modern black mask)
+          CTX.fillStyle = "#1a1a2e";
+          CTX.beginPath();
+          CTX.moveTo(55, 15);
+          CTX.quadraticCurveTo(75, 12, 85, 18);
+          CTX.lineTo(85, 22);
+          CTX.quadraticCurveTo(75, 20, 55, 20);
+          CTX.closePath();
+          CTX.fill();
+
+          // Winglet tips (curved up)
+          CTX.strokeStyle = this.secondaryColor;
+          CTX.lineWidth = 4;
+          CTX.lineCap = "round";
+          CTX.beginPath();
+          CTX.moveTo(35, -8);
+          CTX.quadraticCurveTo(38, -15, 42, -12);
+          CTX.stroke();
+          CTX.beginPath();
+          CTX.moveTo(35, 58);
+          CTX.quadraticCurveTo(38, 65, 42, 62);
+          CTX.stroke();
+
+          // Wings (A350 curved wing design)
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(40, 25);
+          CTX.quadraticCurveTo(35, -5, 20, -8);
+          CTX.lineTo(45, -5);
+          CTX.quadraticCurveTo(55, 10, 60, 25);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(40, 25);
+          CTX.quadraticCurveTo(35, 55, 20, 58);
+          CTX.lineTo(45, 55);
+          CTX.quadraticCurveTo(55, 40, 60, 25);
+          CTX.closePath();
+          CTX.fill();
+
+          // Tail (vertical stabilizer with A350 curve)
+          CTX.fillStyle = this.secondaryColor;
+          CTX.beginPath();
+          CTX.moveTo(10, 22);
+          CTX.lineTo(-5, 5);
+          CTX.quadraticCurveTo(0, 3, 8, 8);
+          CTX.lineTo(15, 22);
+          CTX.closePath();
+          CTX.fill();
+          CTX.beginPath();
+          CTX.moveTo(10, 28);
+          CTX.lineTo(-5, 45);
+          CTX.quadraticCurveTo(0, 47, 8, 42);
+          CTX.lineTo(15, 28);
+          CTX.closePath();
+          CTX.fill();
+
+          // Engine (large high-bypass turbofan)
+          CTX.fillStyle = "#DDD";
+          CTX.beginPath();
+          CTX.ellipse(35, 5, 14, 8, 0, 0, Math.PI * 2);
+          CTX.fill();
+          CTX.beginPath();
+          CTX.ellipse(35, 45, 14, 8, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Engine intake detail
+          CTX.fillStyle = "#333";
+          CTX.beginPath();
+          CTX.ellipse(28, 5, 10, 5, 0, 0, Math.PI * 2);
+          CTX.fill();
+          CTX.beginPath();
+          CTX.ellipse(28, 45, 10, 5, 0, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Airbus logo area
+          CTX.fillStyle = "rgba(255,255,255,0.3)";
+          CTX.fillRect(25, 22, 20, 6);
+        }
+
+        takeDamage() {
+          if (this.invulnerable <= 0) {
+            this.hp--;
+            this.invulnerable = 120; // 2 seconds at 60fps
+            this.velocity = 3; // Push down
+
+            // Create damage particles
+            for (let i = 0; i < 10; i++) {
+              createParticle(
+                this.x + this.width / 2,
+                this.y + this.height / 2,
+                (Math.random() - 0.5) * 8,
+                (Math.random() - 0.5) * 8,
+                "#FF5722",
+                30,
+              );
+            }
+
+            return true;
+          }
+          return false;
+        }
+
+        getBounds() {
+          return {
+            x: this.x + 10,
+            y: this.y + 5,
+            width: this.width - 20,
+            height: this.height - 10,
+          };
+        }
+      }
+
+      // Cloud Class
+      class Cloud {
+        constructor() {
+          this.x = CANVAS.width + Math.random() * 200;
+          this.y = Math.random() * CANVAS.height;
+          this.speed = 1 + Math.random() * 2;
+          this.scale = 0.5 + Math.random() * 1;
+          this.opacity = 0.4 + Math.random() * 0.4;
+        }
+
+        update() {
+          this.x -=
+            this.speed * (gameState.plane ? gameState.plane.speed / 3 : 1);
+        }
+
+        draw() {
+          CTX.save();
+          CTX.globalAlpha = this.opacity;
+          CTX.fillStyle = "#FFF";
+          CTX.translate(this.x, this.y);
+          CTX.scale(this.scale, this.scale);
+
+          // Draw fluffy cloud
+          CTX.beginPath();
+          CTX.arc(0, 0, 25, 0, Math.PI * 2);
+          CTX.arc(30, -5, 30, 0, Math.PI * 2);
+          CTX.arc(55, 5, 25, 0, Math.PI * 2);
+          CTX.arc(25, 15, 22, 0, Math.PI * 2);
+          CTX.fill();
+
+          CTX.restore();
+        }
+      }
+
+      // Item Classes
+      class Coin {
+        constructor() {
+          this.x = CANVAS.width + Math.random() * 300;
+          this.y = 50 + Math.random() * (CANVAS.height - 100);
+          this.radius = 15;
+          this.collected = false;
+          this.bobOffset = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.x -= gameState.plane ? gameState.plane.speed : 3;
+          this.bobOffset += 0.08;
+        }
+
+        draw() {
+          if (this.collected) return;
+
+          const bobY = Math.sin(this.bobOffset) * 5;
+
+          CTX.save();
+          CTX.translate(this.x, this.y + bobY);
+
+          // Outer ring
+          CTX.fillStyle = "#FFD700";
+          CTX.beginPath();
+          CTX.arc(0, 0, this.radius, 0, Math.PI * 2);
+          CTX.fill();
+          CTX.strokeStyle = "#FFA000";
+          CTX.lineWidth = 3;
+          CTX.stroke();
+
+          // Inner star
+          CTX.fillStyle = "#FFF";
+          CTX.font = "16px Arial";
+          CTX.textAlign = "center";
+          CTX.textBaseline = "middle";
+          CTX.fillText("★", 0, 1);
+
+          // Shine effect
+          CTX.fillStyle = "rgba(255,255,255,0.6)";
+          CTX.beginPath();
+          CTX.arc(-5, -5, 4, 0, Math.PI * 2);
+          CTX.fill();
+
+          CTX.restore();
+        }
+
+        getBounds() {
+          const bobY = Math.sin(this.bobOffset) * 5;
+          return {
+            x: this.x - this.radius,
+            y: this.y + bobY - this.radius,
+            width: this.radius * 2,
+            height: this.radius * 2,
+          };
+        }
+      }
+
+      class FuelCan {
+        constructor() {
+          this.x = CANVAS.width + Math.random() * 500;
+          this.y = 50 + Math.random() * (CANVAS.height - 100);
+          this.width = 35;
+          this.height = 45;
+          this.collected = false;
+        }
+
+        update() {
+          this.x -= gameState.plane ? gameState.plane.speed : 3;
+        }
+
+        draw() {
+          if (this.collected) return;
+
+          CTX.save();
+          CTX.translate(this.x, this.y);
+
+          // Can body
+          CTX.fillStyle = "#F44336";
+          CTX.fillRect(-15, -20, 30, 40);
+
+          // Top rounded
+          CTX.beginPath();
+          CTX.arc(0, -20, 15, Math.PI, 0);
+          CTX.fill();
+
+          // Handle
+          CTX.strokeStyle = "#D32F2F";
+          CTX.lineWidth = 4;
+          CTX.beginPath();
+          CTX.arc(0, -25, 8, Math.PI, 0);
+          CTX.stroke();
+
+          // Label
+          CTX.fillStyle = "#FFF";
+          CTX.font = "bold 10px Arial";
+          CTX.textAlign = "center";
+          CTX.fillText("FUEL", 0, 0);
+          CTX.font = "14px Arial";
+          CTX.fillText("⛽", 0, 12);
+
+          // Shine
+          CTX.fillStyle = "rgba(255,255,255,0.3)";
+          CTX.fillRect(-12, -18, 8, 35);
+
+          CTX.restore();
+        }
+
+        getBounds() {
+          return {
+            x: this.x - 15,
+            y: this.y - 25,
+            width: 30,
+            height: 50,
+          };
+        }
+      }
+
+      // Heart Class - Rare HP restore item
+      class Heart {
+        constructor() {
+          this.x = CANVAS.width + Math.random() * 800;
+          this.y = 50 + Math.random() * (CANVAS.height - 100);
+          this.radius = 18;
+          this.collected = false;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.x -= gameState.plane ? gameState.plane.speed : 3;
+          this.pulseOffset += 0.1;
+        }
+
+        draw() {
+          if (this.collected) return;
+
+          const pulse = 1 + Math.sin(this.pulseOffset) * 0.15;
+
+          CTX.save();
+          CTX.translate(this.x, this.y);
+          CTX.scale(pulse, pulse);
+
+          // Glow effect
+          CTX.shadowColor = "#FF1744";
+          CTX.shadowBlur = 15;
+
+          // Draw heart shape
+          CTX.fillStyle = "#FF1744";
+          CTX.beginPath();
+          // Left circle
+          CTX.arc(-8, -5, 10, 0, Math.PI * 2);
+          // Right circle
+          CTX.arc(8, -5, 10, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Bottom triangle
+          CTX.beginPath();
+          CTX.moveTo(-16, 0);
+          CTX.lineTo(0, 20);
+          CTX.lineTo(16, 0);
+          CTX.closePath();
+          CTX.fill();
+
+          // Shine
+          CTX.shadowBlur = 0;
+          CTX.fillStyle = "rgba(255,255,255,0.6)";
+          CTX.beginPath();
+          CTX.arc(-6, -8, 4, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Plus sign
+          CTX.fillStyle = "#FFF";
+          CTX.font = "bold 12px Arial";
+          CTX.textAlign = "center";
+          CTX.textBaseline = "middle";
+          CTX.fillText("+1", 0, 2);
+
+          CTX.restore();
+        }
+
+        getBounds() {
+          const pulse = 1 + Math.sin(this.pulseOffset) * 0.15;
+          const size = this.radius * pulse;
+          return {
+            x: this.x - size,
+            y: this.y - size,
+            width: size * 2,
+            height: size * 2,
+          };
+        }
+      }
+
+      // Obstacle Class
+      class StormCloud {
+        constructor() {
+          this.x = CANVAS.width + Math.random() * 400;
+          this.y = Math.random() * CANVAS.height;
+          this.scale = 0.8 + Math.random() * 0.6;
+          this.flashTimer = 0;
+        }
+
+        update() {
+          this.x -= gameState.plane ? gameState.plane.speed : 3;
+          this.flashTimer++;
+        }
+
+        draw() {
+          CTX.save();
+          CTX.translate(this.x, this.y);
+          CTX.scale(this.scale, this.scale);
+
+          // Flash effect
+          const flash = Math.sin(this.flashTimer * 0.15) > 0.7;
+
+          // Dark cloud
+          CTX.fillStyle = flash ? "#4A4A4A" : "#2C2C2C";
+
+          CTX.beginPath();
+          CTX.arc(0, 0, 30, 0, Math.PI * 2);
+          CTX.arc(35, -8, 38, 0, Math.PI * 2);
+          CTX.arc(70, 0, 32, 0, Math.PI * 2);
+          CTX.arc(35, 18, 30, 0, Math.PI * 2);
+          CTX.fill();
+
+          // Lightning if flashing
+          if (flash) {
+            CTX.strokeStyle = "#FFEB3B";
+            CTX.lineWidth = 3;
+            CTX.beginPath();
+            CTX.moveTo(30, 25);
+            CTX.lineTo(20, 50);
+            CTX.lineTo(35, 50);
+            CTX.lineTo(25, 80);
+            CTX.stroke();
+
+            // Glow
+            CTX.shadowColor = "#FFEB3B";
+            CTX.shadowBlur = 20;
+            CTX.stroke();
+            CTX.shadowBlur = 0;
+          }
+
+          CTX.restore();
+        }
+
+        getBounds() {
+          return {
+            x: this.x - 25 * this.scale,
+            y: this.y - 20 * this.scale,
+            width: 80 * this.scale,
+            height: 50 * this.scale,
+          };
+        }
+      }
+
+      // Particle Class
+      class Particle {
+        constructor(x, y, vx, vy, color, life) {
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.color = color;
+          this.life = life;
+          this.maxLife = life;
+          this.size = 3 + Math.random() * 4;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life--;
+          this.size *= 0.97;
+        }
+
+        draw() {
+          CTX.save();
+          CTX.globalAlpha = this.life / this.maxLife;
+          CTX.fillStyle = this.color;
+          CTX.beginPath();
+          CTX.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          CTX.fill();
+          CTX.restore();
+        }
+      }
+
+      function createParticle(x, y, vx, vy, color, life) {
+        gameState.particles.push(new Particle(x, y, vx, vy, color, life));
+      }
+
+      // Collision Detection
+      function checkCollision(rect1, rect2) {
+        return (
+          rect1.x < rect2.x + rect2.width &&
+          rect1.x + rect1.width > rect2.x &&
+          rect1.y < rect2.y + rect2.height &&
+          rect1.y + rect1.height > rect2.y
+        );
+      }
+
+      // Spawn functions
+      function spawnCloud() {
+        if (Math.random() < 0.03) {
+          gameState.clouds.push(new Cloud());
+        }
+      }
+
+      function spawnItem() {
+        // Progressive difficulty: items spawn less frequently as distance increases
+        // Base rates decrease every 1000 meters
+        const distanceFactor = Math.min(gameState.distance / 5000, 0.7); // Max 70% reduction
+
+        // Coin spawn rate: 1.5% -> down to 0.45%
+        const coinRate = 0.015 * (1 - distanceFactor * 0.7);
+        if (Math.random() < coinRate) {
+          gameState.items.push(new Coin());
+        }
+
+        // Fuel spawn rate: 0.8% -> down to 0.24%
+        const fuelRate = 0.008 * (1 - distanceFactor * 0.7);
+        if (Math.random() < fuelRate) {
+          gameState.items.push(new FuelCan());
+        }
+
+        // Rare heart spawn - slightly more rare as distance increases
+        const heartRate = 0.0015 * (1 - distanceFactor * 0.5);
+        if (Math.random() < heartRate) {
+          gameState.items.push(new Heart());
+        }
+      }
+
+      function spawnObstacle() {
+        if (Math.random() < 0.012) {
+          gameState.obstacles.push(new StormCloud());
+        }
+      }
+
+      // Update HUD
+      function updateHUD() {
+        const plane = gameState.plane;
+
+        document.getElementById("fuelBar").style.width =
+          (plane.fuel / plane.maxFuel) * 100 + "%";
+        document.getElementById("fuelText").textContent =
+          Math.ceil(plane.fuel) + "%";
+
+        const hpBar = document.getElementById("hpBar");
+        hpBar.style.width = (plane.hp / plane.maxHP) * 100 + "%";
+        hpBar.className = "bar-fill hp-bar" + (plane.hp === 1 ? " low" : "");
+        document.getElementById("hpText").textContent =
+          plane.hp + "/" + plane.maxHP;
+
+        document.getElementById("score").textContent = gameState.score;
+        document.getElementById("distance").textContent =
+          Math.floor(gameState.distance) + " m";
+      }
+
+      // Game Loop
+      function gameLoop(currentTime) {
+        if (!gameState.isPlaying) return;
+
+        // Clear canvas
+        CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+
+        // Draw background gradient
+        const gradient = CTX.createLinearGradient(0, 0, 0, CANVAS.height);
+        gradient.addColorStop(0, "#4A90D9");
+        gradient.addColorStop(0.5, "#87CEEB");
+        gradient.addColorStop(1, "#E0F6FF");
+        CTX.fillStyle = gradient;
+        CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
+
+        // Spawn entities
+        spawnCloud();
+        spawnItem();
+        spawnObstacle();
+
+        // Update and draw clouds (background)
+        gameState.clouds = gameState.clouds.filter((cloud) => {
+          cloud.update();
+          cloud.draw();
+          return cloud.x > -150;
+        });
+
+        // Update and draw items
+        gameState.items = gameState.items.filter((item) => {
+          item.update();
+          item.draw();
+
+          // Check collision with plane
+          if (
+            !item.collected &&
+            checkCollision(gameState.plane.getBounds(), item.getBounds())
+          ) {
+            item.collected = true;
+
+            if (item instanceof Coin) {
+              gameState.score += 10;
+              // Sparkle particles
+              for (let i = 0; i < 6; i++) {
+                createParticle(
+                  item.x,
+                  item.y,
+                  (Math.random() - 0.5) * 6,
+                  (Math.random() - 0.5) * 6,
+                  "#FFD700",
+                  20,
+                );
+              }
+            } else if (item instanceof FuelCan) {
+              gameState.plane.fuel = Math.min(
+                gameState.plane.maxFuel,
+                gameState.plane.fuel + 10,
+              );
+              // Green particles
+              for (let i = 0; i < 8; i++) {
+                createParticle(
+                  item.x,
+                  item.y,
+                  (Math.random() - 0.5) * 5,
+                  (Math.random() - 0.5) * 5,
+                  "#4CAF50",
+                  25,
+                );
+              }
+            } else if (item instanceof Heart) {
+              // Restore 1 HP (max at maxHP)
+              if (gameState.plane.hp < gameState.plane.maxHP) {
+                gameState.plane.hp++;
+              }
+              // Heart particles - red and pink
+              for (let i = 0; i < 12; i++) {
+                createParticle(
+                  item.x,
+                  item.y,
+                  (Math.random() - 0.5) * 6,
+                  (Math.random() - 0.5) * 6,
+                  Math.random() > 0.5 ? "#FF1744" : "#FF69B4",
+                  35,
+                );
+              }
+            }
+            return false;
+          }
+
+          return item.x > -50;
+        });
+
+        // Update and draw obstacles
+        gameState.obstacles = gameState.obstacles.filter((obstacle) => {
+          obstacle.update();
+          obstacle.draw();
+
+          // Check collision with plane
+          if (
+            checkCollision(gameState.plane.getBounds(), obstacle.getBounds())
+          ) {
+            if (gameState.plane.takeDamage()) {
+              // Push back
+              obstacle.x -= 100;
+            }
+          }
+
+          return obstacle.x > -150;
+        });
+
+        // Update distance based on plane speed
+        gameState.distance += gameState.plane.speed * 0.5;
+
+        // Update and draw plane
+        gameState.plane.update();
+        gameState.plane.draw();
+
+        // Update and draw particles
+        gameState.particles = gameState.particles.filter((p) => {
+          p.update();
+          p.draw();
+          return p.life > 0;
+        });
+
+        // Update HUD
+        updateHUD();
+
+        // Check game over
+        if (gameState.plane.hp <= 0 || gameState.plane.fuel <= 0) {
+          gameOver();
+          return;
+        }
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      // Start Game
+      // Check and update unlock status for planes
+      function checkUnlockStatus(showModal = false) {
+        const a350Card = document.getElementById("a350Card");
+        const a350Lock = document.getElementById("a350Lock");
+        const a350Content = document.getElementById("a350Content");
+
+        if (!a350Card || !a350Lock || !a350Content) return;
+
+        const isUnlocked = gameState.highDistance >= 25000;
+
+        if (isUnlocked) {
+          // Unlocked
+          a350Card.classList.remove("locked");
+          a350Lock.classList.add("hidden");
+          a350Content.classList.remove("hidden");
+
+          // Show unlock notification only when explicitly requested (after game over)
+          if (
+            showModal &&
+            gameState.justUnlocked &&
+            !gameState.unlockNotified
+          ) {
+            gameState.unlockNotified = true;
+            gameState.justUnlocked = false;
+            localStorage.setItem("skyPilotA350Notified", "true");
+            // Show modal after a short delay
+            setTimeout(() => {
+              showUnlockModal();
+            }, 500);
+          }
+        } else {
+          // Locked
+          a350Card.classList.add("locked");
+          a350Lock.classList.remove("hidden");
+          a350Content.classList.add("hidden");
+        }
+      }
+
+      // Try to start game with plane (check unlock first)
+      function tryStartGame(planeType) {
+        const planeConfig = PLANE_TYPES[planeType];
+
+        if (
+          planeConfig.unlockDistance > 0 &&
+          gameState.highDistance < planeConfig.unlockDistance
+        ) {
+          // Show locked message
+          const remaining = planeConfig.unlockDistance - gameState.highDistance;
+          alert(
+            `🔒 ${planeConfig.name} is locked!\n\nFly ${planeConfig.unlockDistance.toLocaleString()}m to unlock.\nYou need ${remaining.toLocaleString()}m more!\n\nYour best: ${gameState.highDistance.toLocaleString()}m`,
+          );
+          return;
+        }
+
+        startGame(planeType);
+      }
+
+      function startGame(planeType) {
+        document.getElementById("selectionScreen").style.display = "none";
+        document.getElementById("hud").style.display = "block";
+        document.querySelector(".touch-hint").style.display = "none";
+
+        // Close unlock modal if open
+        closeUnlockModal();
+
+        // Resize canvas - use inner dimensions for accurate sizing
+        resizeCanvas();
+
+        // Initialize game state
+        gameState.plane = new Plane(planeType);
+        gameState.score = 0;
+        gameState.distance = 0;
+        gameState.clouds = [];
+        gameState.items = [];
+        gameState.obstacles = [];
+        gameState.particles = [];
+        gameState.isPlaying = true;
+
+        // Start loop
+        requestAnimationFrame(gameLoop);
+      }
+
+      // Game Over
+      function gameOver() {
+        gameState.isPlaying = false;
+
+        // Update high score
+        if (gameState.score > gameState.highScore) {
+          gameState.highScore = gameState.score;
+          localStorage.setItem("skyPilotHighScore", gameState.highScore);
+        }
+
+        // Update high distance
+        const currentDistance = Math.floor(gameState.distance);
+        if (currentDistance > gameState.highDistance) {
+          // Check if this will unlock the A350
+          if (gameState.highDistance < 25000 && currentDistance >= 25000) {
+            gameState.justUnlocked = true;
+          }
+          gameState.highDistance = currentDistance;
+          localStorage.setItem("skyPilotHighDistance", gameState.highDistance);
+        }
+
+        document.getElementById("finalScore").textContent = gameState.score;
+        document.getElementById("finalDistance").textContent = currentDistance;
+        document.getElementById("highScore").textContent = gameState.highScore;
+        document.getElementById("bestDistance").textContent =
+          gameState.highDistance;
+        document.getElementById("menuHighScore").textContent =
+          gameState.highScore;
+        document.getElementById("menuHighDistance").textContent =
+          gameState.highDistance;
+        document.getElementById("gameOverScreen").style.display = "flex";
+        document.getElementById("hud").style.display = "none";
+
+        // Check if new plane unlocked (but don't show modal yet)
+        checkUnlockStatus(false);
+      }
+
+      // Exit Game
+      function confirmExit() {
+        if (
+          confirm("Are you sure you want to exit? Your progress will be lost.")
+        ) {
+          gameState.isPlaying = false;
+          document.getElementById("hud").style.display = "none";
+          document.getElementById("selectionScreen").style.display = "flex";
+          document.querySelector(".touch-hint").style.display =
+            window.innerWidth <= 768 ? "block" : "none";
+        }
+      }
+
+      // Reset Game
+      function resetGame() {
+        document.getElementById("gameOverScreen").style.display = "none";
+        document.getElementById("selectionScreen").style.display = "flex";
+
+        // Show touch hint on mobile
+        if (window.innerWidth <= 768) {
+          document.querySelector(".touch-hint").style.display = "block";
+        }
+
+        // Check if we should show unlock modal (now that we're back at menu)
+        checkUnlockStatus(true);
+      }
+
+      // Event Listeners
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          input.isPressed = true;
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          input.isPressed = false;
+        }
+      });
+
+      window.addEventListener("mousedown", () => {
+        input.isPressed = true;
+      });
+
+      window.addEventListener("mouseup", () => {
+        input.isPressed = false;
+      });
+
+      // Touch events for mobile - attached to window for full screen
+      window.addEventListener(
+        "touchstart",
+        (e) => {
+          input.isPressed = true;
+        },
+        { passive: true },
+      );
+
+      window.addEventListener(
+        "touchend",
+        (e) => {
+          input.isPressed = false;
+        },
+        { passive: true },
+      );
+
+      window.addEventListener(
+        "touchcancel",
+        (e) => {
+          input.isPressed = false;
+        },
+        { passive: true },
+      );
+
+      // Pointer events for better cross-device support
+      window.addEventListener("pointerdown", (e) => {
+        input.isPressed = true;
+      });
+
+      window.addEventListener("pointerup", (e) => {
+        input.isPressed = false;
+      });
+
+      window.addEventListener("pointercancel", (e) => {
+        input.isPressed = false;
+      });
+
+      // Handle resize and orientation change
+      function resizeCanvas() {
+        CANVAS.width = window.innerWidth;
+        CANVAS.height = window.innerHeight;
+      }
+
+      window.addEventListener("resize", () => {
+        if (gameState.isPlaying) {
+          resizeCanvas();
+        }
+      });
+
+      // Handle mobile viewport changes (address bar show/hide)
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", () => {
+          if (gameState.isPlaying) {
+            resizeCanvas();
+          }
+        });
+      }
+
+      // Handle orientation change
+      window.addEventListener("orientationchange", () => {
+        setTimeout(() => {
+          if (gameState.isPlaying) {
+            resizeCanvas();
+          }
+        }, 100);
+      });
+
+      // Show unlock modal
+      function showUnlockModal() {
+        const modal = document.getElementById("unlockModal");
+        if (modal) {
+          modal.style.display = "flex";
+        }
+      }
+
+      // Close unlock modal
+      function closeUnlockModal() {
+        const modal = document.getElementById("unlockModal");
+        if (modal) {
+          modal.style.display = "none";
+        }
+      }
+
+      // Initialize high score and high distance display
+      document.getElementById("highScore").textContent = gameState.highScore;
+      document.getElementById("menuHighScore").textContent =
+        gameState.highScore;
+      document.getElementById("bestDistance").textContent =
+        gameState.highDistance;
+      document.getElementById("menuHighDistance").textContent =
+        gameState.highDistance;
+
+      // Check unlock status on load (don't show modal)
+      checkUnlockStatus(false);
+    </script>
+  </body>
+</html>

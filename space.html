@@ -1,0 +1,2503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Cosmic Defenders</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+        font-family: "Segoe UI", sans-serif;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      canvas {
+        display: block;
+        background: #0a0a2e;
+      }
+      #titleScreen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a1a4e 0%, #0a0a2e 70%);
+        z-index: 100;
+      }
+      #titleScreen h1 {
+        font-size: clamp(1.8rem, 5vw, 3.5rem);
+        color: #fff;
+        text-shadow:
+          0 0 30px #7c4dff,
+          0 0 60px #7c4dff;
+        margin-bottom: 10px;
+        animation: glow 2s ease-in-out infinite alternate;
+        text-align: center;
+      }
+      #titleScreen h2 {
+        font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+        color: #b388ff;
+        margin-bottom: 30px;
+        letter-spacing: 3px;
+      }
+      @keyframes glow {
+        from {
+          text-shadow:
+            0 0 20px #7c4dff,
+            0 0 40px #7c4dff;
+        }
+        to {
+          text-shadow:
+            0 0 40px #e040fb,
+            0 0 80px #e040fb;
+        }
+      }
+      .start-btn {
+        padding: 16px 50px;
+        font-size: clamp(1rem, 3vw, 1.4rem);
+        background: linear-gradient(135deg, #7c4dff, #e040fb);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 0 30px rgba(124, 77, 255, 0.5);
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+      .start-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 50px rgba(224, 64, 251, 0.7);
+      }
+      #hud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 8px 15px;
+        display: none;
+        z-index: 50;
+        pointer-events: none;
+      }
+      .hud-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .hp-display {
+        display: flex;
+        gap: 2px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .hp-heart {
+        font-size: clamp(1rem, 2.5vw, 1.4rem);
+        filter: drop-shadow(0 0 4px #ff1744);
+        transition: all 0.3s;
+      }
+      .hp-heart.lost {
+        opacity: 0.2;
+        transform: scale(0.7);
+      }
+      .score-box {
+        background: rgba(255, 215, 0, 0.15);
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: #ffd700;
+        font-size: clamp(0.8rem, 2vw, 1.1rem);
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
+      .stage-box {
+        background: rgba(124, 77, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: #b388ff;
+        font-size: clamp(0.7rem, 1.8vw, 0.95rem);
+        font-weight: bold;
+      }
+      .weapon-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: #fff;
+        font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .exit-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1.5px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.2s;
+        pointer-events: auto;
+        padding: 0;
+        line-height: 1;
+      }
+      .exit-btn:hover {
+        background: rgba(255, 82, 82, 0.3);
+        border-color: #ff5252;
+        color: #fff;
+      }
+      .highscore-box {
+        margin-top: 20px;
+        padding: 10px 30px;
+        border-radius: 16px;
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        color: #ffd700;
+        font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+      }
+      #bossWarning {
+        position: fixed;
+        inset: 0;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 80;
+        background: rgba(255, 0, 0, 0.1);
+      }
+      #bossWarning span {
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        color: #ff1744;
+        font-weight: bold;
+        text-shadow: 0 0 30px #ff1744;
+        animation: warnPulse 0.5s ease-in-out infinite alternate;
+        text-align: center;
+        padding: 0 20px;
+      }
+      @keyframes warnPulse {
+        from {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        to {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+      }
+      #overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.85);
+        text-align: center;
+        padding: 20px;
+      }
+      #overlay h2 {
+        font-size: clamp(1.6rem, 5vw, 2.5rem);
+        margin-bottom: 15px;
+        text-shadow: 0 0 20px currentColor;
+      }
+      #overlay .sub {
+        font-size: clamp(1rem, 3vw, 1.3rem);
+        margin-bottom: 8px;
+      }
+      #overlay .info {
+        font-size: clamp(0.8rem, 2vw, 1rem);
+        color: #aaa;
+        margin-bottom: 25px;
+      }
+      #overlay button {
+        padding: 14px 40px;
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        background: linear-gradient(135deg, #7c4dff, #e040fb);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        box-shadow: 0 0 20px rgba(124, 77, 255, 0.4);
+      }
+      #overlay button:hover {
+        transform: scale(1.08);
+      }
+      #touchControls {
+        position: fixed;
+        bottom: 15px;
+        left: 0;
+        width: 100%;
+        display: none;
+        justify-content: space-between;
+        padding: 0 15px;
+        z-index: 60;
+        pointer-events: none;
+      }
+      .touch-btn {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        pointer-events: auto;
+        -webkit-tap-highlight-color: transparent;
+      }
+      @media (max-width: 768px) {
+        #touchControls {
+          display: flex;
+        }
+      }
+
+      .home-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        z-index: 200;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+      .home-btn:hover {
+        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="titleScreen">
+      <a href="index.html" class="home-btn" onclick="event.stopPropagation()"
+        >🏠 Home</a
+      >
+      <h1>🚀 COSMIC DEFENDERS</h1>
+      <h2>SPACE SHOOTING ADVENTURE</h2>
+      <button class="start-btn" onclick="startGame()">▶ START GAME</button>
+      <div class="highscore-box" id="highScoreBox">
+        🏆 High Score: <span id="hiScoreText">0</span>
+        <div
+          style="
+            font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+            margin-top: 4px;
+            color: #b388ff;
+            font-weight: normal;
+          "
+        >
+          🌟 Best: <span id="bestStageText">Stage 1</span>
+        </div>
+      </div>
+    </div>
+    <div id="hud">
+      <div class="hud-row">
+        <div class="hp-display" id="hpDisplay"></div>
+        <div class="score-box">⭐ <span id="scoreText">0</span></div>
+      </div>
+      <div class="hud-row" style="margin-top: 4px">
+        <div class="weapon-box" id="weaponDisplay">🔫 Basic</div>
+        <div style="display: flex; align-items: center; gap: 6px">
+          <div class="stage-box" id="stageText">Stage 1</div>
+          <button class="exit-btn" id="exitBtn" onclick="exitGame()">✕</button>
+        </div>
+      </div>
+    </div>
+    <div id="bossWarning"><span>⚠️ WARNING — BOSS INCOMING ⚠️</span></div>
+    <div id="overlay">
+      <h2 id="olTitle"></h2>
+      <div class="sub" id="olSub"></div>
+      <div class="info" id="olInfo"></div>
+      <button id="olBtn" onclick="onOverlayBtn()"></button>
+    </div>
+    <div id="touchControls">
+      <div class="touch-btn" id="btnLeft">◀</div>
+      <div class="touch-btn" id="btnRight">▶</div>
+    </div>
+    <canvas id="c"></canvas>
+    <script>
+      const C = document.getElementById("c"),
+        X = C.getContext("2d");
+
+      // ── 9:16 VIEWPORT ──
+      const ASPECT = 9 / 16;
+      let GW, GH, OX, OY, SCALE;
+      function resize() {
+        let ww = innerWidth,
+          wh = innerHeight;
+        if (ww / wh > ASPECT) {
+          GH = wh;
+          GW = Math.floor(wh * ASPECT);
+        } else {
+          GW = ww;
+          GH = Math.floor(ww / ASPECT);
+        }
+        C.width = GW;
+        C.height = GH;
+        C.style.width = GW + "px";
+        C.style.height = GH + "px";
+        SCALE = GW / 360; // base design width=360
+      }
+      resize();
+      addEventListener("resize", resize);
+
+      // ── WEAPONS (8 types) ──
+      const WEAPONS = {
+        basic: {
+          name: "Basic",
+          color: "#ffeb3b",
+          dmg: 1,
+          rate: 12,
+          speed: 10,
+          icon: "🔫",
+        },
+        dual: {
+          name: "Dual",
+          color: "#ff9800",
+          dmg: 1,
+          rate: 10,
+          speed: 10,
+          icon: "🔥",
+        },
+        spread: {
+          name: "Spread",
+          color: "#76ff03",
+          dmg: 1,
+          rate: 16,
+          speed: 9,
+          icon: "🌟",
+        },
+        laser: {
+          name: "Laser",
+          color: "#40c4ff",
+          dmg: 3,
+          rate: 4,
+          speed: 25,
+          icon: "⚡",
+        },
+        missile: {
+          name: "Missile",
+          color: "#ff5252",
+          dmg: 4,
+          rate: 25,
+          speed: 6,
+          icon: "🚀",
+        },
+        plasma: {
+          name: "Plasma",
+          color: "#e040fb",
+          dmg: 2,
+          rate: 14,
+          speed: 7,
+          icon: "🔮",
+        },
+        chain: {
+          name: "Chain",
+          color: "#69f0ae",
+          dmg: 2,
+          rate: 18,
+          speed: 12,
+          icon: "⛓️",
+        },
+        shockwave: {
+          name: "Shockwave",
+          color: "#ffd740",
+          dmg: 1,
+          rate: 30,
+          speed: 0,
+          icon: "💫",
+        },
+      };
+      const WKEYS = Object.keys(WEAPONS);
+
+      const STAGES = [
+        {
+          name: "Asteroid Belt",
+          waves: 14,
+          bg1: "#1a1a4e",
+          bg2: "#0d0d3b",
+          enemies: ["scout", "zigzag"],
+          bossHP: 50,
+          bossName: "Rock Guardian",
+        },
+        {
+          name: "Nebula Zone",
+          waves: 18,
+          bg1: "#2a1a3e",
+          bg2: "#1a0a2e",
+          enemies: ["scout", "zigzag", "shooter"],
+          bossHP: 80,
+          bossName: "Space Kraken",
+        },
+        {
+          name: "Dark Sector",
+          waves: 22,
+          bg1: "#1a0a1e",
+          bg2: "#0a0a0e",
+          enemies: ["scout", "zigzag", "shooter", "tank"],
+          bossHP: 120,
+          bossName: "Alien Mothership",
+        },
+        {
+          name: "Crimson Nebula",
+          waves: 26,
+          bg1: "#3e0a0a",
+          bg2: "#1a0505",
+          enemies: ["scout", "zigzag", "shooter", "tank", "kamikaze"],
+          bossHP: 170,
+          bossName: "Inferno Dragon",
+        },
+        {
+          name: "Void Abyss",
+          waves: 30,
+          bg1: "#0a0014",
+          bg2: "#000005",
+          enemies: ["scout", "zigzag", "shooter", "tank", "kamikaze"],
+          bossHP: 230,
+          bossName: "Void Emperor",
+        },
+      ];
+
+      // ── GAME STATE ──
+      let G = {
+        state: "title",
+        score: 0,
+        stage: 0,
+        wave: 0,
+        waveTimer: 0,
+        waveDelay: 120,
+        bossWarningTimer: 0,
+        shieldTimer: 0,
+        weaponKey: "basic",
+        shootTimer: 0,
+      };
+      let player,
+        bullets = [],
+        enemies = [],
+        eBullets = [],
+        items = [],
+        particles = [],
+        stars = [];
+      let boss = null;
+      let keys = { left: false, right: false, up: false, down: false };
+      let touchL = false,
+        touchR = false;
+
+      // ── STARS & SPACE OBJECTS ──
+      let nebulae = [],
+        planets = [];
+      function initStars() {
+        stars = [];
+        // Multi-layer stars with colors
+        for (let i = 0; i < 80; i++)
+          stars.push({
+            x: Math.random() * GW,
+            y: Math.random() * GH,
+            s: Math.random() * 1.5 + 0.3,
+            sp: Math.random() * 1.5 + 0.3,
+            b: Math.random(),
+            c: "#fff",
+            tw: Math.random() * Math.PI * 2,
+          });
+        // Colored stars
+        let colors = ["#aad4ff", "#ffe0b2", "#ffccbc", "#c5cae9", "#b2ebf2"];
+        for (let i = 0; i < 30; i++)
+          stars.push({
+            x: Math.random() * GW,
+            y: Math.random() * GH,
+            s: Math.random() * 2 + 1,
+            sp: Math.random() * 0.8 + 0.2,
+            b: Math.random(),
+            c: colors[Math.floor(Math.random() * colors.length)],
+            tw: Math.random() * Math.PI * 2,
+          });
+        // Big bright stars with cross flare
+        for (let i = 0; i < 6; i++)
+          stars.push({
+            x: Math.random() * GW,
+            y: Math.random() * GH,
+            s: Math.random() * 1.5 + 2,
+            sp: Math.random() * 0.3 + 0.1,
+            b: 1,
+            c: "#fff",
+            tw: Math.random() * Math.PI * 2,
+            flare: true,
+          });
+        // Nebula clouds per stage
+        nebulae = [];
+        let nColors =
+          G.stage === 0
+            ? ["#1a237e", "#283593", "#0d47a1"]
+            : G.stage === 1
+              ? ["#4a148c", "#6a1b9a", "#880e4f"]
+              : ["#004d40", "#1b5e20", "#0d47a1"];
+        for (let i = 0; i < 4; i++) {
+          nebulae.push({
+            x: Math.random() * GW,
+            y: Math.random() * GH,
+            r: 40 + Math.random() * 80,
+            c: nColors[Math.floor(Math.random() * nColors.length)],
+            sp: 0.1 + Math.random() * 0.3,
+            a: 0.06 + Math.random() * 0.08,
+          });
+        }
+        // Distant planets
+        planets = [];
+        let pColors = ["#5d4037", "#e65100", "#1565c0", "#2e7d32", "#ad1457"];
+        for (let i = 0; i < 2; i++) {
+          planets.push({
+            x: Math.random() * GW,
+            y: Math.random() * GH * 0.6,
+            r: 10 + Math.random() * 20,
+            c: pColors[Math.floor(Math.random() * pColors.length)],
+            sp: 0.05 + Math.random() * 0.1,
+            ring: Math.random() > 0.5,
+          });
+        }
+      }
+      initStars();
+      function drawStars() {
+        let t = Date.now() * 0.001;
+        // Nebulae (draw first, behind everything)
+        nebulae.forEach((n) => {
+          n.y += n.sp;
+          if (n.y - n.r > GH) {
+            n.y = -n.r;
+            n.x = Math.random() * GW;
+          }
+          X.save();
+          X.globalAlpha = n.a;
+          let g = X.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+          g.addColorStop(0, n.c);
+          g.addColorStop(1, "transparent");
+          X.fillStyle = g;
+          X.beginPath();
+          X.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          X.fill();
+          X.restore();
+        });
+        // Distant planets
+        planets.forEach((p) => {
+          p.y += p.sp;
+          if (p.y - p.r > GH) {
+            p.y = -p.r - 20;
+            p.x = Math.random() * GW;
+          }
+          X.save();
+          X.globalAlpha = 0.25;
+          let g = X.createRadialGradient(
+            p.x - p.r * 0.3,
+            p.y - p.r * 0.3,
+            p.r * 0.1,
+            p.x,
+            p.y,
+            p.r,
+          );
+          g.addColorStop(0, "#fff");
+          g.addColorStop(0.3, p.c);
+          g.addColorStop(1, "#000");
+          X.fillStyle = g;
+          X.beginPath();
+          X.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          X.fill();
+          if (p.ring) {
+            X.strokeStyle = "rgba(255,255,255,.15)";
+            X.lineWidth = 2;
+            X.beginPath();
+            X.ellipse(p.x, p.y, p.r * 1.6, p.r * 0.35, 0.3, 0, Math.PI * 2);
+            X.stroke();
+          }
+          X.restore();
+        });
+        // Stars
+        stars.forEach((s) => {
+          s.y += s.sp;
+          if (s.y > GH) {
+            s.y = 0;
+            s.x = Math.random() * GW;
+          }
+          s.tw += 0.03;
+          let twinkle = s.flare
+            ? 0.7 + Math.sin(s.tw) * 0.3
+            : 0.3 + s.b * 0.5 + Math.sin(s.tw) * 0.15;
+          X.globalAlpha = twinkle;
+          X.fillStyle = s.c;
+          X.beginPath();
+          X.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+          X.fill();
+          // Cross flare for big stars
+          if (s.flare) {
+            X.globalAlpha = twinkle * 0.4;
+            X.strokeStyle = "#fff";
+            X.lineWidth = 0.5;
+            X.beginPath();
+            X.moveTo(s.x - s.s * 3, s.y);
+            X.lineTo(s.x + s.s * 3, s.y);
+            X.stroke();
+            X.beginPath();
+            X.moveTo(s.x, s.y - s.s * 3);
+            X.lineTo(s.x, s.y + s.s * 3);
+            X.stroke();
+          }
+        });
+        X.globalAlpha = 1;
+      }
+
+      // ── PARTICLES ──
+      class Pt {
+        constructor(x, y, vx, vy, c, life, sz) {
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.c = c;
+          this.life = life;
+          this.ml = life;
+          this.sz = sz || 3 + Math.random() * 3;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life--;
+          this.sz *= 0.97;
+        }
+        draw() {
+          X.globalAlpha = this.life / this.ml;
+          X.fillStyle = this.c;
+          X.beginPath();
+          X.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+          X.fill();
+          X.globalAlpha = 1;
+        }
+      }
+      function emit(x, y, n, c, sp, life) {
+        for (let i = 0; i < n; i++) {
+          let a = Math.random() * Math.PI * 2,
+            v = Math.random() * sp;
+          particles.push(
+            new Pt(x, y, Math.cos(a) * v, Math.sin(a) * v, c, life || 25),
+          );
+        }
+      }
+      function sparkle(x, y, c) {
+        emit(x, y, 6, c, 3, 15);
+      }
+
+      // ── PLAYER ──
+      class Player {
+        constructor() {
+          this.w = 40;
+          this.h = 48;
+          this.x = GW / 2 - this.w / 2;
+          this.y = GH - 80;
+          this.hp = 5;
+          this.maxHP = 5;
+          this.speed = 5;
+          this.vspeed = 3;
+          this.inv = 0;
+          this.engineT = 0;
+        }
+        update() {
+          let dx = 0,
+            dy = 0;
+          if (keys.left || touchL) dx = -this.speed;
+          if (keys.right || touchR) dx = this.speed;
+          if (keys.up) dy = -this.vspeed;
+          if (keys.down) dy = this.vspeed;
+          this.x += dx;
+          this.y += dy;
+          if (this.x < 2) this.x = 2;
+          if (this.x > GW - this.w - 2) this.x = GW - this.w - 2;
+          // Limit vertical range to bottom 35% of screen
+          let minY = GH * 0.65;
+          if (this.y < minY) this.y = minY;
+          if (this.y > GH - this.h - 8) this.y = GH - this.h - 8;
+          if (this.inv > 0) this.inv--;
+          this.engineT += 0.15;
+        }
+        draw() {
+          X.save();
+          if (this.inv > 0 && Math.floor(this.inv / 4) % 2) X.globalAlpha = 0.4;
+          let cx = this.x + this.w / 2,
+            cy = this.y + this.h / 2;
+          let W = this.w,
+            H = this.h;
+          let flicker = Math.sin(this.engineT * 3);
+
+          // === DUAL ENGINE GLOW ===
+          let fl1 = 10 + Math.random() * 10 + flicker * 3;
+          let fl2 = 8 + Math.random() * 8 + flicker * 2;
+          // Left engine glow
+          X.fillStyle = "rgba(64,196,255,.2)";
+          X.beginPath();
+          X.ellipse(cx - 9, this.y + H + 3, 6, 10, 0, 0, Math.PI * 2);
+          X.fill();
+          // Right engine glow
+          X.fillStyle = "rgba(64,196,255,.2)";
+          X.beginPath();
+          X.ellipse(cx + 9, this.y + H + 3, 6, 10, 0, 0, Math.PI * 2);
+          X.fill();
+          // Left flame
+          X.fillStyle = "#40c4ff";
+          X.beginPath();
+          X.moveTo(cx - 13, this.y + H);
+          X.lineTo(cx - 9, this.y + H + fl1);
+          X.lineTo(cx - 5, this.y + H);
+          X.closePath();
+          X.fill();
+          X.fillStyle = "#fff";
+          X.beginPath();
+          X.moveTo(cx - 11, this.y + H);
+          X.lineTo(cx - 9, this.y + H + fl1 * 0.5);
+          X.lineTo(cx - 7, this.y + H);
+          X.closePath();
+          X.fill();
+          // Right flame
+          X.fillStyle = "#40c4ff";
+          X.beginPath();
+          X.moveTo(cx + 5, this.y + H);
+          X.lineTo(cx + 9, this.y + H + fl2);
+          X.lineTo(cx + 13, this.y + H);
+          X.closePath();
+          X.fill();
+          X.fillStyle = "#fff";
+          X.beginPath();
+          X.moveTo(cx + 7, this.y + H);
+          X.lineTo(cx + 9, this.y + H + fl2 * 0.5);
+          X.lineTo(cx + 11, this.y + H);
+          X.closePath();
+          X.fill();
+
+          // === MAIN HULL (layered armor) ===
+          // Outer hull - dark base
+          X.fillStyle = "#4527a0";
+          X.beginPath();
+          X.moveTo(cx, this.y - 4); // sharp nose tip
+          X.lineTo(this.x + W + 2, this.y + H * 0.65);
+          X.lineTo(this.x + W - 2, this.y + H);
+          X.lineTo(this.x + 2, this.y + H);
+          X.lineTo(this.x - 2, this.y + H * 0.65);
+          X.closePath();
+          X.fill();
+          // Inner hull - brighter
+          X.fillStyle = "#7c4dff";
+          X.beginPath();
+          X.moveTo(cx, this.y);
+          X.lineTo(this.x + W - 4, this.y + H * 0.6);
+          X.lineTo(this.x + W - 5, this.y + H - 3);
+          X.lineTo(this.x + 5, this.y + H - 3);
+          X.lineTo(this.x + 4, this.y + H * 0.6);
+          X.closePath();
+          X.fill();
+          // Center stripe - accent
+          X.fillStyle = "#b388ff";
+          X.beginPath();
+          X.moveTo(cx, this.y + 2);
+          X.lineTo(cx + 4, this.y + H * 0.5);
+          X.lineTo(cx + 3, this.y + H - 5);
+          X.lineTo(cx - 3, this.y + H - 5);
+          X.lineTo(cx - 4, this.y + H * 0.5);
+          X.closePath();
+          X.fill();
+
+          // === COCKPIT (angular aggressive) ===
+          X.fillStyle = "#1a237e";
+          X.beginPath();
+          X.moveTo(cx, this.y + 4);
+          X.lineTo(cx + 6, this.y + 16);
+          X.lineTo(cx + 4, this.y + 22);
+          X.lineTo(cx - 4, this.y + 22);
+          X.lineTo(cx - 6, this.y + 16);
+          X.closePath();
+          X.fill();
+          // Cockpit highlight
+          X.fillStyle = "rgba(100,255,255,.4)";
+          X.beginPath();
+          X.moveTo(cx, this.y + 6);
+          X.lineTo(cx + 4, this.y + 14);
+          X.lineTo(cx, this.y + 18);
+          X.lineTo(cx - 4, this.y + 14);
+          X.closePath();
+          X.fill();
+
+          // === WINGS (swept back, aggressive) ===
+          X.fillStyle = "#512da8";
+          // Left wing
+          X.beginPath();
+          X.moveTo(this.x + 6, this.y + H * 0.5);
+          X.lineTo(this.x - 16, this.y + H - 2);
+          X.lineTo(this.x - 10, this.y + H + 4);
+          X.lineTo(this.x + 8, this.y + H - 2);
+          X.closePath();
+          X.fill();
+          // Right wing
+          X.beginPath();
+          X.moveTo(this.x + W - 6, this.y + H * 0.5);
+          X.lineTo(this.x + W + 16, this.y + H - 2);
+          X.lineTo(this.x + W + 10, this.y + H + 4);
+          X.lineTo(this.x + W - 8, this.y + H - 2);
+          X.closePath();
+          X.fill();
+
+          // === WING CANNONS ===
+          X.fillStyle = "#b0bec5";
+          X.fillRect(this.x - 14, this.y + H - 8, 4, 12);
+          X.fillRect(this.x + W + 10, this.y + H - 8, 4, 12);
+          // Cannon tips glow
+          X.fillStyle = "#ff5252";
+          X.beginPath();
+          X.arc(this.x - 12, this.y + H - 9, 2.5, 0, Math.PI * 2);
+          X.fill();
+          X.beginPath();
+          X.arc(this.x + W + 12, this.y + H - 9, 2.5, 0, Math.PI * 2);
+          X.fill();
+
+          // === ENGINE PODS ===
+          X.fillStyle = "#37474f";
+          X.fillRect(cx - 14, this.y + H - 8, 10, 10);
+          X.fillRect(cx + 4, this.y + H - 8, 10, 10);
+          X.fillStyle = "#546e7a";
+          X.fillRect(cx - 13, this.y + H - 6, 8, 6);
+          X.fillRect(cx + 5, this.y + H - 6, 8, 6);
+
+          // === REACTOR CORE GLOW ===
+          let pulse = 0.5 + Math.sin(this.engineT) * 0.3;
+          X.save();
+          X.shadowColor = "#e040fb";
+          X.shadowBlur = 12;
+          X.fillStyle = `rgba(224,64,251,${pulse})`;
+          X.beginPath();
+          X.arc(cx, this.y + H * 0.55, 4, 0, Math.PI * 2);
+          X.fill();
+          X.fillStyle = "#fff";
+          X.beginPath();
+          X.arc(cx, this.y + H * 0.55, 1.8, 0, Math.PI * 2);
+          X.fill();
+          X.restore();
+
+          // === SHIELD ===
+          if (G.shieldTimer > 0) {
+            X.strokeStyle = `rgba(0,229,255,${0.3 + Math.sin(Date.now() * 0.01) * 0.2})`;
+            X.lineWidth = 2.5;
+            X.beginPath();
+            X.arc(cx, cy, 30, 0, Math.PI * 2);
+            X.stroke();
+            X.strokeStyle = "rgba(0,229,255,.1)";
+            X.lineWidth = 5;
+            X.stroke();
+          }
+          X.restore();
+        }
+        hit() {
+          if (this.inv > 0 || G.shieldTimer > 0) return;
+          this.hp--;
+          this.inv = 90;
+          emit(this.x + this.w / 2, this.y + this.h / 2, 15, "#ff5252", 5, 30);
+          updateHP();
+          if (this.hp <= 0) gameOver();
+        }
+        bounds() {
+          return { x: this.x + 4, y: this.y + 4, w: this.w - 8, h: this.h - 8 };
+        }
+      }
+
+      // ── BULLETS ──
+      class Bullet {
+        constructor(x, y, vx, vy, c, dmg, sz, isLaser) {
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.c = c;
+          this.dmg = dmg;
+          this.sz = sz || 4;
+          this.dead = false;
+          this.isLaser = isLaser;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (
+            this.y < -20 ||
+            this.y > GH + 20 ||
+            this.x < -20 ||
+            this.x > GW + 20
+          )
+            this.dead = true;
+        }
+        draw() {
+          X.save();
+          X.shadowColor = this.c;
+          X.shadowBlur = this.isLaser ? 12 : 6;
+          X.fillStyle = this.c;
+          if (this.isLaser) {
+            X.fillRect(this.x - 2, this.y, 4, 18);
+          } else {
+            X.beginPath();
+            X.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+            X.fill();
+          }
+          X.restore();
+        }
+        bounds() {
+          let s = this.isLaser ? 8 : this.sz;
+          return {
+            x: this.x - s,
+            y: this.y - s,
+            w: s * 2,
+            h: this.isLaser ? 18 : s * 2,
+          };
+        }
+      }
+
+      // Missile (homing)
+      class MissileBullet extends Bullet {
+        constructor(x, y) {
+          super(x, y, 0, -4, "#ff5252", WEAPONS.missile.dmg, 5, false);
+          this.trail = [];
+        }
+        update() {
+          let best = null,
+            bd = Infinity;
+          let tgts = [...enemies];
+          if (boss) tgts.push(boss);
+          tgts.forEach((e) => {
+            if (e.dead) return;
+            let d = Math.hypot(e.x - this.x, e.y - this.y);
+            if (d < bd) {
+              bd = d;
+              best = e;
+            }
+          });
+          if (best) {
+            let a = Math.atan2(best.y - this.y, best.x - this.x);
+            this.vx += Math.cos(a) * 0.4;
+            this.vy += Math.sin(a) * 0.4;
+            let sp = Math.hypot(this.vx, this.vy);
+            if (sp > WEAPONS.missile.speed) {
+              this.vx = (this.vx / sp) * WEAPONS.missile.speed;
+              this.vy = (this.vy / sp) * WEAPONS.missile.speed;
+            }
+          }
+          this.trail.push({ x: this.x, y: this.y, l: 10 });
+          this.trail = this.trail.filter((t) => {
+            t.l--;
+            return t.l > 0;
+          });
+          super.update();
+        }
+        draw() {
+          this.trail.forEach((t) => {
+            X.globalAlpha = (t.l / 10) * 0.3;
+            X.fillStyle = "#ff8a80";
+            X.beginPath();
+            X.arc(t.x, t.y, 2.5, 0, Math.PI * 2);
+            X.fill();
+          });
+          X.globalAlpha = 1;
+          super.draw();
+        }
+      }
+
+      // Plasma (big slow ball)
+      class PlasmaBullet extends Bullet {
+        constructor(x, y) {
+          super(
+            x,
+            y,
+            0,
+            -WEAPONS.plasma.speed,
+            "#e040fb",
+            WEAPONS.plasma.dmg,
+            8,
+            false,
+          );
+          this.t = 0;
+        }
+        update() {
+          this.t++;
+          super.update();
+        }
+        draw() {
+          X.save();
+          let p = 1 + Math.sin(this.t * 0.2) * 0.15;
+          X.shadowColor = "#e040fb";
+          X.shadowBlur = 18;
+          X.fillStyle = "#e040fb";
+          X.beginPath();
+          X.arc(this.x, this.y, this.sz * p, 0, Math.PI * 2);
+          X.fill();
+          X.fillStyle = "rgba(255,255,255,.5)";
+          X.beginPath();
+          X.arc(this.x, this.y, this.sz * p * 0.5, 0, Math.PI * 2);
+          X.fill();
+          X.restore();
+        }
+      }
+
+      // Chain Lightning bullet
+      class ChainBullet extends Bullet {
+        constructor(x, y) {
+          super(
+            x,
+            y,
+            0,
+            -WEAPONS.chain.speed,
+            "#69f0ae",
+            WEAPONS.chain.dmg,
+            3,
+            false,
+          );
+          this.chainRange = 80;
+          this.chained = [];
+        }
+        onHit(target) {
+          // Chain to nearby enemies
+          this.chained = [target];
+          let last = target;
+          for (let i = 0; i < 3; i++) {
+            let best = null,
+              bd = this.chainRange;
+            let tgts = [...enemies];
+            if (boss && !boss.dead) tgts.push(boss);
+            tgts.forEach((e) => {
+              if (e.dead || this.chained.includes(e)) return;
+              let d = Math.hypot(
+                (e.x || e.x + e.w / 2) - last.x,
+                (e.y || e.y + e.h / 2) - last.y,
+              );
+              if (d < bd) {
+                bd = d;
+                best = e;
+              }
+            });
+            if (best) {
+              this.chained.push(best);
+              best.hit(1);
+              // Draw lightning between
+              let fx = last.x + (last.w || 0) / 2,
+                fy = last.y + (last.h || 0) / 2;
+              let tx = best.x + best.w / 2,
+                ty = best.y + best.h / 2;
+              for (let j = 0; j < 3; j++) {
+                particles.push(
+                  new Pt(
+                    (fx + tx) / 2 + Math.random() * 20 - 10,
+                    (fy + ty) / 2 + Math.random() * 20 - 10,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    "#69f0ae",
+                    10,
+                    2,
+                  ),
+                );
+              }
+              last = best;
+            } else break;
+          }
+        }
+      }
+
+      // Shockwave (expanding ring)
+      class Shockwave {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.r = 10;
+          this.maxR = 100;
+          this.dead = false;
+          this.dmg = WEAPONS.shockwave.dmg;
+          this.hit_set = new Set();
+        }
+        update() {
+          this.r += 3;
+          if (this.r > this.maxR) this.dead = true;
+          // damage enemies in range
+          let tgts = [...enemies];
+          if (boss && !boss.dead) tgts.push(boss);
+          tgts.forEach((e) => {
+            if (e.dead || this.hit_set.has(e)) return;
+            let cx = e.x + (e.w || 0) / 2,
+              cy = e.y + (e.h || 0) / 2;
+            let d = Math.hypot(cx - this.x, cy - this.y);
+            if (d < this.r + 20) {
+              e.hit(this.dmg);
+              this.hit_set.add(e);
+            }
+          });
+        }
+        draw() {
+          let a = 1 - this.r / this.maxR;
+          X.save();
+          X.globalAlpha = a * 0.6;
+          X.strokeStyle = "#ffd740";
+          X.lineWidth = 4;
+          X.shadowColor = "#ffd740";
+          X.shadowBlur = 15;
+          X.beginPath();
+          X.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          X.stroke();
+          X.globalAlpha = a * 0.2;
+          X.fillStyle = "#ffd740";
+          X.fill();
+          X.restore();
+        }
+        bounds() {
+          return {
+            x: this.x - this.r,
+            y: this.y - this.r,
+            w: this.r * 2,
+            h: this.r * 2,
+          };
+        }
+      }
+
+      let shockwaves = [];
+
+      function playerShoot() {
+        G.shootTimer++;
+        let w = WEAPONS[G.weaponKey];
+        if (G.shootTimer < w.rate) return;
+        G.shootTimer = 0;
+        let cx = player.x + player.w / 2,
+          cy = player.y;
+        if (G.weaponKey === "basic") {
+          bullets.push(new Bullet(cx, cy, 0, -w.speed, w.color, w.dmg));
+        } else if (G.weaponKey === "dual") {
+          bullets.push(new Bullet(cx - 8, cy, 0, -w.speed, w.color, w.dmg));
+          bullets.push(new Bullet(cx + 8, cy, 0, -w.speed, w.color, w.dmg));
+        } else if (G.weaponKey === "spread") {
+          for (let i = -2; i <= 2; i++)
+            bullets.push(
+              new Bullet(cx, cy, i * 1.5, -w.speed * 0.95, w.color, w.dmg),
+            );
+        } else if (G.weaponKey === "laser") {
+          bullets.push(
+            new Bullet(cx, cy - 10, 0, -w.speed, w.color, w.dmg, 3, true),
+          );
+        } else if (G.weaponKey === "missile") {
+          bullets.push(new MissileBullet(cx, cy));
+        } else if (G.weaponKey === "plasma") {
+          bullets.push(new PlasmaBullet(cx, cy));
+        } else if (G.weaponKey === "chain") {
+          bullets.push(new ChainBullet(cx, cy));
+        } else if (G.weaponKey === "shockwave") {
+          shockwaves.push(new Shockwave(cx, cy));
+        }
+      }
+
+      // ── ENEMIES ──
+      class Enemy {
+        constructor(type, x) {
+          this.type = type;
+          this.x = x || Math.random() * (GW - 35) + 15;
+          this.y = -35;
+          this.dead = false;
+          this.shootT = 0;
+          // Difficulty scaling per stage
+          let spdMul = 1 + G.stage * 0.12;
+          let hpMul = 1 + G.stage * 0.3;
+          if (type === "scout") {
+            this.w = 28;
+            this.h = 28;
+            this.hp = Math.ceil(1 * hpMul);
+            this.sp = 2.5 * spdMul;
+            this.c = "#ff7043";
+            this.sc2 = "#e64a19";
+            this.pts = 50;
+          } else if (type === "zigzag") {
+            this.w = 30;
+            this.h = 26;
+            this.hp = Math.ceil(2 * hpMul);
+            this.sp = 2 * spdMul;
+            this.c = "#ffd54f";
+            this.sc2 = "#f9a825";
+            this.pts = 80;
+            this.zigT = 0;
+            this.zigDir = Math.random() > 0.5 ? 1 : -1;
+          } else if (type === "shooter") {
+            this.w = 32;
+            this.h = 32;
+            this.hp = Math.ceil(3 * hpMul);
+            this.sp = 1.5 * spdMul;
+            this.c = "#ef5350";
+            this.sc2 = "#c62828";
+            this.pts = 120;
+            this.stopY = 50 + Math.random() * 120;
+            this.fireRate = Math.max(25, 60 - G.stage * 8); // faster each stage
+          } else if (type === "tank") {
+            this.w = 40;
+            this.h = 36;
+            this.hp = Math.ceil(5 * hpMul);
+            this.sp = 1 * spdMul;
+            this.c = "#78909c";
+            this.sc2 = "#37474f";
+            this.pts = 200;
+          } else if (type === "kamikaze") {
+            this.w = 24;
+            this.h = 24;
+            this.hp = Math.ceil(2 * hpMul);
+            this.sp = 1.8 * spdMul;
+            this.c = "#ff1744";
+            this.sc2 = "#d50000";
+            this.pts = 150;
+            this.phase = "approach"; // approach -> lock -> rush
+            this.lockY = 80 + Math.random() * 100;
+            this.rushVx = 0;
+            this.rushVy = 0;
+            this.lockTimer = 0;
+          }
+        }
+        update() {
+          if (this.type === "zigzag") {
+            this.zigT += 0.05;
+            this.x += Math.sin(this.zigT) * 2.5 * this.zigDir;
+            this.y += this.sp;
+          } else if (this.type === "kamikaze") {
+            if (this.phase === "approach") {
+              this.y += this.sp;
+              if (this.y >= this.lockY) {
+                this.phase = "lock";
+                this.lockTimer = 45;
+              }
+            } else if (this.phase === "lock") {
+              this.lockTimer--;
+              // Wobble while locking on
+              this.x += Math.sin(this.lockTimer * 0.5) * 2;
+              if (this.lockTimer <= 0) {
+                // Rush toward player
+                let a = Math.atan2(
+                  player.y + player.h / 2 - (this.y + this.h / 2),
+                  player.x + player.w / 2 - (this.x + this.w / 2),
+                );
+                this.rushVx = Math.cos(a) * (this.sp * 2.5);
+                this.rushVy = Math.sin(a) * (this.sp * 2.5);
+                this.phase = "rush";
+              }
+            } else {
+              this.x += this.rushVx;
+              this.y += this.rushVy;
+            }
+          } else if (this.type === "shooter") {
+            if (this.y < this.stopY) this.y += this.sp;
+            else {
+              this.shootT++;
+              if (this.shootT % this.fireRate === 0)
+                eBullets.push(
+                  new Bullet(
+                    this.x + this.w / 2,
+                    this.y + this.h,
+                    0,
+                    4.5 + G.stage * 0.3,
+                    "#ff1744",
+                    1,
+                    3,
+                  ),
+                );
+            }
+          } else this.y += this.sp;
+          if (this.y > GH + 50) this.dead = true;
+        }
+        draw() {
+          X.save();
+          let cx = this.x + this.w / 2,
+            cy = this.y + this.h / 2;
+          let t = Date.now() * 0.005;
+          X.shadowBlur = 8;
+
+          if (this.type === "scout") {
+            // Menacing arrowhead drone with glowing red eye
+            X.shadowColor = "#ff3d00";
+            X.fillStyle = "#bf360c";
+            X.beginPath();
+            X.moveTo(cx, this.y + this.h + 4);
+            X.lineTo(this.x - 4, this.y - 2);
+            X.lineTo(cx - 3, this.y + 6);
+            X.lineTo(cx + 3, this.y + 6);
+            X.lineTo(this.x + this.w + 4, this.y - 2);
+            X.closePath();
+            X.fill();
+            // Inner armor
+            X.fillStyle = "#e64a19";
+            X.beginPath();
+            X.moveTo(cx, this.y + this.h);
+            X.lineTo(this.x + 4, this.y + 4);
+            X.lineTo(this.x + this.w - 4, this.y + 4);
+            X.closePath();
+            X.fill();
+            // Glowing eye
+            let ep = 0.6 + Math.sin(t * 3) * 0.4;
+            X.shadowColor = "#ff1744";
+            X.shadowBlur = 12;
+            X.fillStyle = `rgba(255,23,68,${ep})`;
+            X.beginPath();
+            X.arc(cx, cy + 2, 4, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#fff";
+            X.beginPath();
+            X.arc(cx, cy + 2, 1.5, 0, Math.PI * 2);
+            X.fill();
+          } else if (this.type === "zigzag") {
+            // Alien insect with mandibles and compound eyes
+            X.shadowColor = "#ffab00";
+            // Body segments
+            X.fillStyle = "#e65100";
+            X.beginPath();
+            X.ellipse(
+              cx,
+              cy + 2,
+              this.w / 2.2,
+              this.h / 2.5,
+              0,
+              0,
+              Math.PI * 2,
+            );
+            X.fill();
+            X.fillStyle = "#bf360c";
+            X.beginPath();
+            X.ellipse(cx, cy - 4, this.w / 3, this.h / 3, 0, 0, Math.PI * 2);
+            X.fill();
+            // Mandibles
+            let mAng = Math.sin(t * 4) * 0.15;
+            X.strokeStyle = "#ff6d00";
+            X.lineWidth = 2.5;
+            X.lineCap = "round";
+            X.beginPath();
+            X.moveTo(cx - 5, cy + this.h * 0.35);
+            X.quadraticCurveTo(
+              cx - 10,
+              cy + this.h * 0.6 + mAng * 20,
+              cx - 3,
+              cy + this.h * 0.55,
+            );
+            X.stroke();
+            X.beginPath();
+            X.moveTo(cx + 5, cy + this.h * 0.35);
+            X.quadraticCurveTo(
+              cx + 10,
+              cy + this.h * 0.6 + mAng * 20,
+              cx + 3,
+              cy + this.h * 0.55,
+            );
+            X.stroke();
+            // Compound eyes (multiple dots)
+            X.shadowColor = "#76ff03";
+            X.shadowBlur = 6;
+            X.fillStyle = "#76ff03";
+            X.beginPath();
+            X.arc(cx - 6, cy - 6, 4, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 6, cy - 6, 4, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#1b5e20";
+            X.beginPath();
+            X.arc(cx - 6, cy - 6, 2, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 6, cy - 6, 2, 0, Math.PI * 2);
+            X.fill();
+            // Antennae
+            X.strokeStyle = "#ffab00";
+            X.lineWidth = 1;
+            X.beginPath();
+            X.moveTo(cx - 4, cy - 10);
+            X.lineTo(cx - 10, cy - 16);
+            X.stroke();
+            X.beginPath();
+            X.moveTo(cx + 4, cy - 10);
+            X.lineTo(cx + 10, cy - 16);
+            X.stroke();
+          } else if (this.type === "shooter") {
+            // Armored turret with cannon barrel and targeting eye
+            X.shadowColor = "#d50000";
+            // Base armor
+            X.fillStyle = "#4e342e";
+            X.beginPath();
+            X.moveTo(this.x - 2, this.y + this.h);
+            X.lineTo(this.x + 2, this.y);
+            X.lineTo(this.x + this.w - 2, this.y);
+            X.lineTo(this.x + this.w + 2, this.y + this.h);
+            X.closePath();
+            X.fill();
+            // Inner plating
+            X.fillStyle = "#6d4c41";
+            X.fillRect(this.x + 4, this.y + 3, this.w - 8, this.h - 6);
+            // Side armor strips
+            X.fillStyle = "#3e2723";
+            X.fillRect(this.x, this.y + 5, 4, this.h - 10);
+            X.fillRect(this.x + this.w - 4, this.y + 5, 4, this.h - 10);
+            // Targeting eye
+            let ep2 = 0.5 + Math.sin(t * 2) * 0.5;
+            X.shadowColor = "#ff1744";
+            X.shadowBlur = 10;
+            X.fillStyle = `rgba(255,23,68,${ep2})`;
+            X.beginPath();
+            X.arc(cx, cy - 3, 5, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#fff";
+            X.beginPath();
+            X.arc(cx, cy - 3, 2, 0, Math.PI * 2);
+            X.fill();
+            // Targeting circle
+            X.strokeStyle = `rgba(255,23,68,${ep2 * 0.5})`;
+            X.lineWidth = 1;
+            X.beginPath();
+            X.arc(cx, cy - 3, 8, 0, Math.PI * 2);
+            X.stroke();
+            // Cannon barrel
+            X.shadowBlur = 4;
+            X.shadowColor = "#ff6d00";
+            X.fillStyle = "#5d4037";
+            X.fillRect(cx - 3, this.y + this.h, 6, 12);
+            X.fillStyle = "#ff6d00";
+            X.beginPath();
+            X.arc(cx, this.y + this.h + 12, 3, 0, Math.PI * 2);
+            X.fill();
+          } else if (this.type === "tank") {
+            // Tank: armored fortress with spikes and pulsing shield
+            X.shadowColor = "#263238";
+            // Main body - hexagon
+            X.fillStyle = "#263238";
+            X.beginPath();
+            X.moveTo(cx, this.y - 3);
+            X.lineTo(this.x + this.w + 3, cy - this.h * 0.2);
+            X.lineTo(this.x + this.w + 3, cy + this.h * 0.2);
+            X.lineTo(cx, this.y + this.h + 3);
+            X.lineTo(this.x - 3, cy + this.h * 0.2);
+            X.lineTo(this.x - 3, cy - this.h * 0.2);
+            X.closePath();
+            X.fill();
+            // Inner armor
+            X.fillStyle = "#455a64";
+            X.beginPath();
+            X.moveTo(cx, this.y + 3);
+            X.lineTo(this.x + this.w - 3, cy);
+            X.lineTo(cx, this.y + this.h - 3);
+            X.lineTo(this.x + 3, cy);
+            X.closePath();
+            X.fill();
+            // Corner spikes
+            X.fillStyle = "#b71c1c";
+            X.beginPath();
+            X.moveTo(this.x - 3, cy - this.h * 0.2);
+            X.lineTo(this.x - 9, cy - 4);
+            X.lineTo(this.x - 3, cy);
+            X.fill();
+            X.beginPath();
+            X.moveTo(this.x + this.w + 3, cy - this.h * 0.2);
+            X.lineTo(this.x + this.w + 9, cy - 4);
+            X.lineTo(this.x + this.w + 3, cy);
+            X.fill();
+            X.beginPath();
+            X.moveTo(this.x - 3, cy + this.h * 0.2);
+            X.lineTo(this.x - 9, cy + 4);
+            X.lineTo(this.x - 3, cy);
+            X.fill();
+            X.beginPath();
+            X.moveTo(this.x + this.w + 3, cy + this.h * 0.2);
+            X.lineTo(this.x + this.w + 9, cy + 4);
+            X.lineTo(this.x + this.w + 3, cy);
+            X.fill();
+            // Core eye
+            let ep3 = 0.4 + Math.sin(t * 1.5) * 0.4;
+            X.shadowColor = "#d50000";
+            X.shadowBlur = 15;
+            X.fillStyle = `rgba(213,0,0,${ep3})`;
+            X.beginPath();
+            X.arc(cx, cy, 7, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#ff8a80";
+            X.beginPath();
+            X.arc(cx, cy, 3.5, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#fff";
+            X.beginPath();
+            X.arc(cx, cy, 1.5, 0, Math.PI * 2);
+            X.fill();
+            // Pulsing shield ring
+            X.strokeStyle = `rgba(69,90,100,${0.2 + Math.sin(t) * 0.15})`;
+            X.lineWidth = 1.5;
+            X.beginPath();
+            X.arc(cx, cy, this.w / 2 + 5, 0, Math.PI * 2);
+            X.stroke();
+          } else if (this.type === "kamikaze") {
+            // Kamikaze: skull-like fiery missile
+            X.shadowColor = "#ff1744";
+            // Flaming trail
+            let flLen = this.phase === "rush" ? 16 : 6;
+            for (let i = 0; i < 3; i++) {
+              X.globalAlpha = 0.3 - i * 0.08;
+              X.fillStyle =
+                i === 0 ? "#ff6d00" : i === 1 ? "#ff1744" : "#d50000";
+              X.beginPath();
+              X.arc(
+                cx + (Math.random() - 0.5) * 4,
+                this.y - 2 - i * 4,
+                4 - i,
+                0,
+                Math.PI * 2,
+              );
+              X.fill();
+            }
+            X.globalAlpha = 1;
+            // Body
+            X.fillStyle = "#b71c1c";
+            X.beginPath();
+            X.moveTo(cx, this.y + this.h + 2);
+            X.lineTo(this.x - 2, cy - 2);
+            X.lineTo(cx, this.y - 2);
+            X.lineTo(this.x + this.w + 2, cy - 2);
+            X.closePath();
+            X.fill();
+            // Inner
+            X.fillStyle = "#e53935";
+            X.beginPath();
+            X.moveTo(cx, this.y + this.h - 2);
+            X.lineTo(this.x + 4, cy);
+            X.lineTo(cx, this.y + 2);
+            X.lineTo(this.x + this.w - 4, cy);
+            X.closePath();
+            X.fill();
+            // Skull eyes
+            let ep4 = this.phase === "rush" ? 1 : 0.4 + Math.sin(t * 5) * 0.4;
+            X.shadowColor = "#ffeb3b";
+            X.shadowBlur = 10;
+            X.fillStyle = `rgba(255,235,59,${ep4})`;
+            X.beginPath();
+            X.arc(cx - 4, cy - 1, 3, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 4, cy - 1, 3, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#fff";
+            X.beginPath();
+            X.arc(cx - 4, cy - 1, 1, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 4, cy - 1, 1, 0, Math.PI * 2);
+            X.fill();
+          }
+          X.restore();
+        }
+        hit(dmg) {
+          this.hp -= dmg;
+          if (this.hp <= 0) {
+            this.dead = true;
+            G.score += this.pts;
+            emit(this.x + this.w / 2, this.y + this.h / 2, 12, this.c, 4);
+            dropItem(this.x + this.w / 2, this.y + this.h / 2);
+          }
+        }
+        bounds() {
+          return { x: this.x, y: this.y, w: this.w, h: this.h };
+        }
+      }
+
+      // ── BOSS ──
+      class Boss {
+        constructor(si) {
+          this.si = si;
+          this.w = si >= 3 ? 95 : 85;
+          this.h = si >= 3 ? 80 : 70;
+          this.x = GW / 2 - this.w / 2;
+          this.y = -90;
+          this.maxHP = STAGES[si].bossHP;
+          this.hp = this.maxHP;
+          this.dead = false;
+          this.t = 0;
+          this.entered = false;
+          this.name = STAGES[si].bossName;
+          this.atkRate = Math.max(0.5, 1 - si * 0.12); // attack interval multiplier (lower=faster)
+          this.c =
+            ["#8d6e63", "#ab47bc", "#26c6da", "#ff6d00", "#7c4dff"][si] ||
+            "#7c4dff";
+          this.sc =
+            ["#5d4037", "#7b1fa2", "#00838f", "#bf360c", "#311b92"][si] ||
+            "#311b92";
+        }
+        update() {
+          this.t++;
+          if (!this.entered) {
+            this.y += 1.5;
+            if (this.y >= 35) this.entered = true;
+            return;
+          }
+          this.x =
+            GW / 2 -
+            this.w / 2 +
+            Math.sin(this.t * 0.02) * (GW / 3 - this.w / 2);
+          let r = this.atkRate; // attack rate multiplier
+          if (this.si === 0) {
+            if (this.t % Math.round(80 * r) === 0)
+              for (let a = 0; a < Math.PI * 2; a += Math.PI / 4)
+                eBullets.push(
+                  new Bullet(
+                    this.x + this.w / 2,
+                    this.y + this.h,
+                    Math.cos(a) * 2.5 + 0.8,
+                    Math.sin(a) * 2.5 + 1.2,
+                    "#ffab91",
+                    1,
+                    4,
+                  ),
+                );
+          } else if (this.si === 1) {
+            if (this.t % Math.round(60 * r) === 0) {
+              let cx = this.x + this.w / 2,
+                cy = this.y + this.h,
+                a = Math.atan2(player.y - cy, player.x + player.w / 2 - cx);
+              for (let i = -1; i <= 1; i++)
+                eBullets.push(
+                  new Bullet(
+                    cx,
+                    cy,
+                    Math.cos(a + i * 0.2) * 3.5,
+                    Math.sin(a + i * 0.2) * 3.5,
+                    "#ce93d8",
+                    1,
+                    4,
+                  ),
+                );
+            }
+          } else if (this.si === 2) {
+            if (this.t % Math.round(10 * r) === 0) {
+              let a = this.t * 0.15;
+              eBullets.push(
+                new Bullet(
+                  this.x + this.w / 2,
+                  this.y + this.h,
+                  Math.cos(a) * 2.5,
+                  Math.sin(a) * 2.5 + 1,
+                  "#4dd0e1",
+                  1,
+                  3,
+                ),
+              );
+            }
+            if (this.t % Math.round(50 * r) === 0)
+              for (let i = 0; i < 4; i++)
+                eBullets.push(
+                  new Bullet(
+                    this.x + this.w / 2,
+                    this.y + this.h,
+                    (i - 1.5) * 1.8,
+                    4.5,
+                    "#80cbc4",
+                    1,
+                    3,
+                  ),
+                );
+          } else if (this.si === 3) {
+            // Inferno Dragon: fire breath (cone) + random fireballs
+            if (this.t % Math.round(40 * r) === 0) {
+              let cx = this.x + this.w / 2,
+                cy = this.y + this.h;
+              let a = Math.atan2(player.y - cy, player.x + player.w / 2 - cx);
+              for (let i = -2; i <= 2; i++)
+                eBullets.push(
+                  new Bullet(
+                    cx,
+                    cy,
+                    Math.cos(a + i * 0.15) * 4,
+                    Math.sin(a + i * 0.15) * 4,
+                    "#ff6d00",
+                    1,
+                    4,
+                  ),
+                );
+            }
+            if (this.t % Math.round(20 * r) === 0) {
+              eBullets.push(
+                new Bullet(
+                  this.x + Math.random() * this.w,
+                  this.y + this.h,
+                  (Math.random() - 0.5) * 3,
+                  3 + Math.random() * 2,
+                  "#ffab00",
+                  1,
+                  3,
+                ),
+              );
+            }
+          } else {
+            // Void Emperor: multi-pattern chaos
+            if (this.t % Math.round(8 * r) === 0) {
+              let a = this.t * 0.12;
+              eBullets.push(
+                new Bullet(
+                  this.x + this.w / 2,
+                  this.y + this.h,
+                  Math.cos(a) * 3,
+                  Math.sin(a) * 3 + 0.5,
+                  "#b388ff",
+                  1,
+                  3,
+                ),
+              );
+              eBullets.push(
+                new Bullet(
+                  this.x + this.w / 2,
+                  this.y + this.h,
+                  Math.cos(a + Math.PI) * 3,
+                  Math.sin(a + Math.PI) * 3 + 0.5,
+                  "#7c4dff",
+                  1,
+                  3,
+                ),
+              );
+            }
+            if (this.t % Math.round(35 * r) === 0) {
+              let cx = this.x + this.w / 2,
+                cy = this.y + this.h;
+              let a = Math.atan2(player.y - cy, player.x + player.w / 2 - cx);
+              for (let i = -2; i <= 2; i++)
+                eBullets.push(
+                  new Bullet(
+                    cx,
+                    cy,
+                    Math.cos(a + i * 0.12) * 4.5,
+                    Math.sin(a + i * 0.12) * 4.5,
+                    "#ea80fc",
+                    1,
+                    5,
+                  ),
+                );
+            }
+            if (this.t % Math.round(60 * r) === 0)
+              for (let i = 0; i < 8; i++) {
+                let a2 = ((Math.PI * 2) / 8) * i;
+                eBullets.push(
+                  new Bullet(
+                    this.x + this.w / 2,
+                    this.y + this.h,
+                    Math.cos(a2) * 2.5,
+                    Math.sin(a2) * 2.5 + 1,
+                    "#d500f9",
+                    1,
+                    4,
+                  ),
+                );
+              }
+          }
+        }
+        draw() {
+          X.save();
+          let cx = this.x + this.w / 2,
+            cy = this.y + this.h / 2;
+          X.shadowColor = this.c;
+          X.shadowBlur = 18;
+          if (this.si === 0) {
+            X.fillStyle = this.c;
+            X.beginPath();
+            X.moveTo(cx, this.y);
+            X.lineTo(this.x + this.w, this.y + 25);
+            X.lineTo(this.x + this.w - 8, this.y + this.h);
+            X.lineTo(this.x + 8, this.y + this.h);
+            X.lineTo(this.x, this.y + 25);
+            X.closePath();
+            X.fill();
+            X.fillStyle = this.sc;
+            X.beginPath();
+            X.arc(cx - 12, cy, 7, 0, Math.PI * 2);
+            X.arc(cx + 12, cy, 7, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#ffcc80";
+            X.beginPath();
+            X.arc(cx - 12, cy, 3.5, 0, Math.PI * 2);
+            X.arc(cx + 12, cy, 3.5, 0, Math.PI * 2);
+            X.fill();
+          } else if (this.si === 1) {
+            X.fillStyle = this.c;
+            X.beginPath();
+            X.ellipse(cx, cy - 5, this.w / 2, this.h / 2.5, 0, 0, Math.PI * 2);
+            X.fill();
+            for (let i = -2; i <= 2; i++) {
+              let tx = cx + i * 15,
+                ag = Math.sin(this.t * 0.05 + i) * 0.3;
+              X.strokeStyle = this.sc;
+              X.lineWidth = 7;
+              X.lineCap = "round";
+              X.beginPath();
+              X.moveTo(tx, cy + 12);
+              X.quadraticCurveTo(
+                tx + Math.sin(ag) * 18,
+                cy + 35,
+                tx + Math.sin(ag) * 12,
+                cy + 48,
+              );
+              X.stroke();
+            }
+            X.fillStyle = "#f3e5f5";
+            X.beginPath();
+            X.arc(cx - 15, cy - 8, 9, 0, Math.PI * 2);
+            X.arc(cx + 15, cy - 8, 9, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#4a148c";
+            X.beginPath();
+            X.arc(cx - 15, cy - 8, 4, 0, Math.PI * 2);
+            X.arc(cx + 15, cy - 8, 4, 0, Math.PI * 2);
+            X.fill();
+          } else if (this.si === 2) {
+            X.fillStyle = this.c;
+            X.beginPath();
+            X.ellipse(cx, cy, this.w / 2, this.h / 3, 0, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = this.sc;
+            X.beginPath();
+            X.ellipse(cx, cy - 4, this.w / 3, this.h / 4, 0, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "rgba(255,255,255,.3)";
+            X.beginPath();
+            X.ellipse(cx, cy - 12, 16, 12, 0, Math.PI, 0);
+            X.fill();
+            for (let i = 0; i < 6; i++) {
+              let a = ((Math.PI * 2) / 6) * i + this.t * 0.03;
+              X.fillStyle = i % 2 ? "#00e5ff" : "#76ff03";
+              X.beginPath();
+              X.arc(
+                cx + Math.cos(a) * 30,
+                cy + Math.sin(a) * 12,
+                3.5,
+                0,
+                Math.PI * 2,
+              );
+              X.fill();
+            }
+          } else if (this.si === 3) {
+            // Inferno Dragon
+            X.fillStyle = "#ff6d00";
+            X.beginPath();
+            X.moveTo(cx, this.y - 5);
+            X.lineTo(this.x + this.w + 8, cy + 5);
+            X.lineTo(this.x + this.w, this.y + this.h + 5);
+            X.lineTo(this.x, this.y + this.h + 5);
+            X.lineTo(this.x - 8, cy + 5);
+            X.closePath();
+            X.fill();
+            X.fillStyle = "#bf360c";
+            X.beginPath();
+            X.moveTo(cx, this.y + 3);
+            X.lineTo(this.x + this.w - 8, cy);
+            X.lineTo(this.x + this.w - 10, this.y + this.h - 3);
+            X.lineTo(this.x + 10, this.y + this.h - 3);
+            X.lineTo(this.x + 8, cy);
+            X.closePath();
+            X.fill();
+            // Wings
+            X.fillStyle = "#e65100";
+            X.beginPath();
+            X.moveTo(this.x - 8, cy);
+            X.lineTo(this.x - 22, cy - 15);
+            X.lineTo(this.x - 5, cy + 10);
+            X.fill();
+            X.beginPath();
+            X.moveTo(this.x + this.w + 8, cy);
+            X.lineTo(this.x + this.w + 22, cy - 15);
+            X.lineTo(this.x + this.w + 5, cy + 10);
+            X.fill();
+            // Dragon eyes
+            let ep = 0.5 + Math.sin(this.t * 0.08) * 0.5;
+            X.shadowColor = "#ffeb3b";
+            X.shadowBlur = 14;
+            X.fillStyle = `rgba(255,235,59,${ep})`;
+            X.beginPath();
+            X.arc(cx - 14, cy - 5, 6, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 14, cy - 5, 6, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#d50000";
+            X.beginPath();
+            X.arc(cx - 14, cy - 5, 3, 0, Math.PI * 2);
+            X.fill();
+            X.beginPath();
+            X.arc(cx + 14, cy - 5, 3, 0, Math.PI * 2);
+            X.fill();
+          } else {
+            // Void Emperor — ominous dark form
+            X.fillStyle = "#311b92";
+            X.beginPath();
+            X.ellipse(cx, cy, this.w / 2 + 5, this.h / 2.8, 0, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#7c4dff";
+            X.beginPath();
+            X.ellipse(cx, cy, this.w / 2.5, this.h / 3.5, 0, 0, Math.PI * 2);
+            X.fill();
+            // Rotating dark energy orbs
+            for (let i = 0; i < 8; i++) {
+              let a = ((Math.PI * 2) / 8) * i + this.t * 0.04;
+              let ox = cx + Math.cos(a) * 38,
+                oy = cy + Math.sin(a) * 16;
+              X.fillStyle = i % 2 ? "#ea80fc" : "#b388ff";
+              X.shadowColor = "#d500f9";
+              X.shadowBlur = 8;
+              X.beginPath();
+              X.arc(ox, oy, 3 + Math.sin(this.t * 0.1 + i) * 1, 0, Math.PI * 2);
+              X.fill();
+            }
+            // Central void eye
+            let vp = 0.6 + Math.sin(this.t * 0.06) * 0.4;
+            X.shadowColor = "#d500f9";
+            X.shadowBlur = 20;
+            X.fillStyle = `rgba(213,0,249,${vp})`;
+            X.beginPath();
+            X.arc(cx, cy, 10, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#e1bee7";
+            X.beginPath();
+            X.arc(cx, cy, 5, 0, Math.PI * 2);
+            X.fill();
+            X.fillStyle = "#fff";
+            X.beginPath();
+            X.arc(cx, cy, 2, 0, Math.PI * 2);
+            X.fill();
+            // Crown spikes
+            X.fillStyle = "#4a148c";
+            for (let i = -2; i <= 2; i++) {
+              let sx = cx + i * 12,
+                sy = this.y - 3;
+              X.beginPath();
+              X.moveTo(sx - 3, sy + 8);
+              X.lineTo(sx, sy - 6 - Math.abs(i) * 2);
+              X.lineTo(sx + 3, sy + 8);
+              X.fill();
+            }
+          }
+          // HP bar
+          X.shadowBlur = 0;
+          let bw = 70,
+            bx = cx - bw / 2,
+            by = this.y - 12;
+          X.fillStyle = "rgba(0,0,0,.5)";
+          X.fillRect(bx, by, bw, 7);
+          X.fillStyle = this.hp > this.maxHP * 0.3 ? "#76ff03" : "#ff1744";
+          X.fillRect(bx, by, bw * (this.hp / this.maxHP), 7);
+          X.strokeStyle = "rgba(255,255,255,.3)";
+          X.strokeRect(bx, by, bw, 7);
+          X.restore();
+        }
+        hit(dmg) {
+          this.hp -= dmg;
+          emit(this.x + this.w / 2, this.y + this.h / 2, 4, this.c, 3, 10);
+          if (this.hp <= 0) {
+            this.dead = true;
+            G.score += 1000 * (this.si + 1);
+            emit(
+              this.x + this.w / 2,
+              this.y + this.h / 2,
+              40,
+              "#ffd54f",
+              7,
+              40,
+            );
+            emit(this.x + this.w / 2, this.y + this.h / 2, 30, this.c, 5, 35);
+            setTimeout(() => stageClear(), 800);
+          }
+        }
+        bounds() {
+          return { x: this.x, y: this.y, w: this.w, h: this.h };
+        }
+      }
+
+      // ── ITEMS ──
+      class Item {
+        constructor(type, x, y) {
+          this.type = type;
+          this.x = x;
+          this.y = y;
+          this.r = 13;
+          this.dead = false;
+          this.t = 0;
+        }
+        update() {
+          this.y += 1.5;
+          this.t++;
+          if (this.y > GH + 25) this.dead = true;
+        }
+        draw() {
+          X.save();
+          let p = Math.sin(this.t * 0.1) * 0.1 + 1;
+          X.translate(this.x, this.y);
+          X.scale(p, p);
+          X.shadowBlur = 10;
+          let em = {
+            star: "⭐",
+            crystal: "💎",
+            heart: "❤️",
+            weapon: "📦",
+            shield: "🛡️",
+          };
+          let sc = {
+            star: "#ffd700",
+            crystal: "#e040fb",
+            heart: "#ff1744",
+            weapon: "#76ff03",
+            shield: "#00e5ff",
+          };
+          X.shadowColor = sc[this.type];
+          X.font = "20px serif";
+          X.textAlign = "center";
+          X.textBaseline = "middle";
+          X.fillText(em[this.type], 0, 0);
+          X.restore();
+        }
+        bounds() {
+          return {
+            x: this.x - this.r,
+            y: this.y - this.r,
+            w: this.r * 2,
+            h: this.r * 2,
+          };
+        }
+      }
+      function dropItem(x, y) {
+        let r = Math.random();
+        if (r < 0.3) items.push(new Item("star", x, y));
+        else if (r < 0.4) items.push(new Item("crystal", x, y));
+        else if (r < 0.5) items.push(new Item("weapon", x, y));
+        else if (r < 0.57) items.push(new Item("heart", x, y));
+        else if (r < 0.62) items.push(new Item("shield", x, y));
+      }
+      function collectItem(it) {
+        if (it.type === "star") {
+          G.score += 100;
+          sparkle(it.x, it.y, "#ffd700");
+        } else if (it.type === "crystal") {
+          G.score += 500;
+          sparkle(it.x, it.y, "#e040fb");
+        } else if (it.type === "heart") {
+          if (player.hp < player.maxHP) player.hp++;
+          updateHP();
+          sparkle(it.x, it.y, "#ff1744");
+        } else if (it.type === "weapon") {
+          let k = WKEYS[Math.floor(Math.random() * WKEYS.length)];
+          G.weaponKey = k;
+          updateWeapon();
+          sparkle(it.x, it.y, "#76ff03");
+        } else if (it.type === "shield") {
+          G.shieldTimer = 300;
+          sparkle(it.x, it.y, "#00e5ff");
+        }
+      }
+
+      // ── COLLISION ──
+      function aabb(a, b) {
+        return (
+          a.x < b.x + b.w &&
+          a.x + a.w > b.x &&
+          a.y < b.y + b.h &&
+          a.y + a.h > b.y
+        );
+      }
+
+      // ── HUD ──
+      function updateHP() {
+        let d = document.getElementById("hpDisplay");
+        d.innerHTML = "";
+        for (let i = 0; i < player.maxHP; i++) {
+          let s = document.createElement("span");
+          s.className = "hp-heart" + (i >= player.hp ? " lost" : "");
+          s.textContent = "❤️";
+          d.appendChild(s);
+        }
+      }
+      function updateWeapon() {
+        let w = WEAPONS[G.weaponKey];
+        document.getElementById("weaponDisplay").innerHTML =
+          w.icon + " " + w.name;
+      }
+      function updateScore() {
+        document.getElementById("scoreText").textContent = G.score;
+      }
+
+      // ── WAVE SPAWNING ──
+      function spawnWave() {
+        let st = STAGES[G.stage],
+          types = st.enemies,
+          count = 3 + G.wave + G.stage * 2;
+        for (let i = 0; i < count; i++) {
+          let e = new Enemy(types[Math.floor(Math.random() * types.length)]);
+          e.y = -35 - i * 55;
+          enemies.push(e);
+        }
+        G.wave++;
+        G.waveTimer = 0;
+      }
+
+      // ── HIGH SCORE & BEST STAGE ──
+      let highScore = parseInt(
+        localStorage.getItem("cosmicDefendersHi") || "0",
+      );
+      let bestStage = parseInt(
+        localStorage.getItem("cosmicDefendersBestStage") || "0",
+      );
+      function loadHighScore() {
+        document.getElementById("hiScoreText").textContent = highScore;
+        document.getElementById("bestStageText").textContent =
+          bestStage >= STAGES.length
+            ? "All Clear! ✨"
+            : "Stage " +
+              (bestStage + 1) +
+              " — " +
+              STAGES[Math.min(bestStage, STAGES.length - 1)].name;
+      }
+      function saveHighScore() {
+        if (G.score > highScore) {
+          highScore = G.score;
+          localStorage.setItem("cosmicDefendersHi", highScore);
+        }
+        let cleared = G.stage + (G.state === "stageclear" ? 1 : 0);
+        if (cleared > bestStage) {
+          bestStage = cleared;
+          localStorage.setItem("cosmicDefendersBestStage", bestStage);
+        }
+        loadHighScore();
+      }
+      loadHighScore();
+
+      // ── GAME FLOW ──
+      function startGame() {
+        // v2 - cache buster
+        document.getElementById("titleScreen").style.display = "none";
+        document.getElementById("hud").style.display = "block";
+        if (innerWidth <= 768)
+          document.getElementById("touchControls").style.display = "flex";
+        resize();
+        G = {
+          state: "playing",
+          score: 0,
+          stage: 0,
+          wave: 0,
+          waveTimer: 0,
+          waveDelay: 150,
+          bossWarningTimer: 0,
+          shieldTimer: 0,
+          weaponKey: "basic",
+          shootTimer: 0,
+        };
+        player = new Player();
+        bullets = [];
+        enemies = [];
+        eBullets = [];
+        items = [];
+        particles = [];
+        shockwaves = [];
+        boss = null;
+        updateHP();
+        updateWeapon();
+        updateScore();
+        document.getElementById("stageText").textContent =
+          "Stage " + (G.stage + 1) + " — " + STAGES[G.stage].name;
+        initStars();
+        requestAnimationFrame(loop);
+      }
+
+      function exitGame() {
+        G.state = "title";
+        saveHighScore();
+        window.location.href = "index.html";
+      }
+
+      function stageClear() {
+        G.state = "stageclear";
+        boss = null;
+        eBullets = [];
+        saveHighScore();
+        if (G.stage >= STAGES.length - 1)
+          showOverlay(
+            "🎉 VICTORY! 🎉",
+            "You saved the cosmos!",
+            "Final Score: " +
+              G.score +
+              (G.score >= highScore ? " 🏆 NEW RECORD!" : ""),
+            "🏠 Title",
+            "#76ff03",
+          );
+        else
+          showOverlay(
+            "✨ STAGE CLEAR! ✨",
+            "Stage " + (G.stage + 1) + " Complete!",
+            "Score: " + G.score,
+            "▶ Next Stage",
+            "#7c4dff",
+          );
+      }
+
+      function gameOver() {
+        G.state = "gameover";
+        saveHighScore();
+        emit(
+          player.x + player.w / 2,
+          player.y + player.h / 2,
+          30,
+          "#ff5252",
+          6,
+          40,
+        );
+        emit(
+          player.x + player.w / 2,
+          player.y + player.h / 2,
+          20,
+          "#ffd54f",
+          5,
+          35,
+        );
+        let hiMsg =
+          G.score >= highScore
+            ? " 🏆 NEW HIGH SCORE!"
+            : " | Best: " + highScore;
+        setTimeout(
+          () =>
+            showOverlay(
+              "💥 GAME OVER 💥",
+              "Score: " + G.score + hiMsg,
+              "Stage " + (G.stage + 1) + " — " + STAGES[G.stage].name,
+              "🔄 Try Again",
+              "#ff5252",
+            ),
+          600,
+        );
+      }
+
+      function showOverlay(title, sub, info, btn, color) {
+        document.getElementById("overlay").style.display = "flex";
+        document.getElementById("olTitle").textContent = title;
+        document.getElementById("olTitle").style.color = color;
+        document.getElementById("olSub").textContent = sub;
+        document.getElementById("olSub").style.color = "#fff";
+        document.getElementById("olInfo").textContent = info;
+        document.getElementById("olBtn").textContent = btn;
+      }
+
+      function onOverlayBtn() {
+        document.getElementById("overlay").style.display = "none";
+        if (G.state === "stageclear" && G.stage < STAGES.length - 1) {
+          G.stage++;
+          G.wave = 0;
+          G.waveTimer = 0;
+          G.state = "playing";
+          boss = null;
+          enemies = [];
+          eBullets = [];
+          shockwaves = [];
+          document.getElementById("stageText").textContent =
+            "Stage " + (G.stage + 1) + " — " + STAGES[G.stage].name;
+          requestAnimationFrame(loop);
+        } else {
+          document.getElementById("hud").style.display = "none";
+          document.getElementById("touchControls").style.display = "none";
+          document.getElementById("titleScreen").style.display = "flex";
+        }
+      }
+
+      // ── MAIN LOOP ──
+      function loop() {
+        if (G.state !== "playing") {
+          X.fillStyle = "#0a0a2e";
+          X.fillRect(0, 0, GW, GH);
+          drawStars();
+          particles = particles.filter((p) => {
+            p.update();
+            p.draw();
+            return p.life > 0;
+          });
+          if (particles.length) requestAnimationFrame(loop);
+          return;
+        }
+        let st = STAGES[G.stage];
+        let gr = X.createLinearGradient(0, 0, 0, GH);
+        gr.addColorStop(0, st.bg1);
+        gr.addColorStop(1, st.bg2);
+        X.fillStyle = gr;
+        X.fillRect(0, 0, GW, GH);
+        drawStars();
+        if (G.shieldTimer > 0) G.shieldTimer--;
+        // Waves
+        if (!boss) {
+          G.waveTimer++;
+          if (G.wave < st.waves) {
+            if (enemies.length === 0 && G.waveTimer > G.waveDelay) spawnWave();
+          } else if (enemies.length === 0 && !boss) {
+            document.getElementById("bossWarning").style.display = "flex";
+            setTimeout(() => {
+              document.getElementById("bossWarning").style.display = "none";
+              boss = new Boss(G.stage);
+            }, 2000);
+          }
+        }
+        // Player
+        player.update();
+        playerShoot();
+        player.draw();
+        // Bullets
+        bullets = bullets.filter((b) => {
+          b.update();
+          b.draw();
+          if (b.dead) return false;
+          let hit = false;
+          enemies.forEach((e) => {
+            if (!e.dead && aabb(b.bounds(), e.bounds())) {
+              e.hit(b.dmg);
+              hit = true;
+              if (b instanceof ChainBullet) b.onHit(e);
+            }
+          });
+          if (boss && !boss.dead && aabb(b.bounds(), boss.bounds())) {
+            boss.hit(b.dmg);
+            hit = true;
+            if (b instanceof ChainBullet) b.onHit(boss);
+          }
+          if (hit && !b.isLaser) b.dead = true;
+          return !b.dead;
+        });
+        // Shockwaves
+        shockwaves = shockwaves.filter((s) => {
+          s.update();
+          s.draw();
+          return !s.dead;
+        });
+        // Enemies
+        enemies = enemies.filter((e) => {
+          e.update();
+          e.draw();
+          if (!e.dead && aabb(player.bounds(), e.bounds())) {
+            player.hit();
+            e.hit(999);
+          }
+          return !e.dead;
+        });
+        // Boss
+        if (boss && !boss.dead) {
+          boss.update();
+          boss.draw();
+          if (boss.entered && aabb(player.bounds(), boss.bounds()))
+            player.hit();
+        }
+        // Enemy bullets
+        eBullets = eBullets.filter((b) => {
+          b.update();
+          b.draw();
+          if (b.dead) return false;
+          if (aabb(b.bounds(), player.bounds())) {
+            player.hit();
+            return false;
+          }
+          return true;
+        });
+        // Items
+        items = items.filter((it) => {
+          it.update();
+          it.draw();
+          if (!it.dead && aabb(it.bounds(), player.bounds())) {
+            collectItem(it);
+            return false;
+          }
+          return !it.dead;
+        });
+        // Particles
+        particles = particles.filter((p) => {
+          p.update();
+          p.draw();
+          return p.life > 0;
+        });
+        updateScore();
+        if (G.state === "playing") requestAnimationFrame(loop);
+      }
+
+      // ── INPUT ──
+      addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a") keys.left = true;
+        if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
+        if (e.key === "ArrowUp" || e.key === "w") {
+          e.preventDefault();
+          keys.up = true;
+        }
+        if (e.key === "ArrowDown" || e.key === "s") keys.down = true;
+      });
+      addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a") keys.left = false;
+        if (e.key === "ArrowRight" || e.key === "d") keys.right = false;
+        if (e.key === "ArrowUp" || e.key === "w") keys.up = false;
+        if (e.key === "ArrowDown" || e.key === "s") keys.down = false;
+      });
+      document.getElementById("btnLeft").addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          touchL = true;
+        },
+        { passive: false },
+      );
+      document
+        .getElementById("btnLeft")
+        .addEventListener("touchend", () => (touchL = false));
+      document.getElementById("btnRight").addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          touchR = true;
+        },
+        { passive: false },
+      );
+      document
+        .getElementById("btnRight")
+        .addEventListener("touchend", () => (touchR = false));
+      document
+        .getElementById("btnLeft")
+        .addEventListener("mousedown", () => (touchL = true));
+      document
+        .getElementById("btnLeft")
+        .addEventListener("mouseup", () => (touchL = false));
+      document
+        .getElementById("btnRight")
+        .addEventListener("mousedown", () => (touchR = true));
+      document
+        .getElementById("btnRight")
+        .addEventListener("mouseup", () => (touchR = false));
+      addEventListener("mouseup", () => {
+        touchL = false;
+        touchR = false;
+      });
+    </script>
+  </body>
+</html>
