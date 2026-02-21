@@ -256,9 +256,21 @@
         width: 100%;
         display: none;
         justify-content: space-between;
+        align-items: flex-end;
         padding: 0 15px;
         z-index: 60;
         pointer-events: none;
+      }
+      .touch-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        pointer-events: auto;
+      }
+      .touch-row {
+        display: flex;
+        gap: 8px;
       }
       .touch-btn {
         width: 65px;
@@ -350,8 +362,16 @@
       <button id="olBtn" onclick="onOverlayBtn()"></button>
     </div>
     <div id="touchControls">
-      <div class="touch-btn" id="btnLeft">◀</div>
-      <div class="touch-btn" id="btnRight">▶</div>
+      <div class="touch-group">
+        <div class="touch-btn" id="btnUp">▲</div>
+        <div class="touch-btn" id="btnDown">▼</div>
+      </div>
+      <div class="touch-group">
+        <div class="touch-row">
+          <div class="touch-btn" id="btnLeft">◀</div>
+          <div class="touch-btn" id="btnRight">▶</div>
+        </div>
+      </div>
     </div>
     <canvas id="c"></canvas>
     <script>
@@ -520,7 +540,9 @@
       let boss = null;
       let keys = { left: false, right: false, up: false, down: false };
       let touchL = false,
-        touchR = false;
+        touchR = false,
+        touchU = false,
+        touchD = false;
 
       // ── STARS & SPACE OBJECTS ──
       let nebulae = [],
@@ -741,8 +763,8 @@
             dy = 0;
           if (keys.left || touchL) dx = -this.speed;
           if (keys.right || touchR) dx = this.speed;
-          if (keys.up) dy = -this.vspeed;
-          if (keys.down) dy = this.vspeed;
+          if (keys.up || touchU) dy = -this.vspeed;
+          if (keys.down || touchD) dy = this.vspeed;
           this.x += dx;
           this.y += dy;
           if (this.x < 2) this.x = 2;
@@ -2494,9 +2516,46 @@
       document
         .getElementById("btnRight")
         .addEventListener("mouseup", () => (touchR = false));
+      // Up/Down touch
+      document.getElementById("btnUp").addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          touchU = true;
+        },
+        { passive: false },
+      );
+      document
+        .getElementById("btnUp")
+        .addEventListener("touchend", () => (touchU = false));
+      document.getElementById("btnDown").addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          touchD = true;
+        },
+        { passive: false },
+      );
+      document
+        .getElementById("btnDown")
+        .addEventListener("touchend", () => (touchD = false));
+      document
+        .getElementById("btnUp")
+        .addEventListener("mousedown", () => (touchU = true));
+      document
+        .getElementById("btnUp")
+        .addEventListener("mouseup", () => (touchU = false));
+      document
+        .getElementById("btnDown")
+        .addEventListener("mousedown", () => (touchD = true));
+      document
+        .getElementById("btnDown")
+        .addEventListener("mouseup", () => (touchD = false));
       addEventListener("mouseup", () => {
         touchL = false;
         touchR = false;
+        touchU = false;
+        touchD = false;
       });
     </script>
   </body>
