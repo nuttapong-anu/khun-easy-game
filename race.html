@@ -1246,7 +1246,7 @@
             if (
               !r.finished &&
               r.lane === it.lane &&
-              Math.abs(r.dist - it.dist) < 25
+              Math.abs(r.dist - it.dist) < 35
             ) {
               it.collected = true;
               if (!r.special) r.special = it.type.id;
@@ -1382,13 +1382,13 @@
           const sy = playerScreenY - (it.dist - player.dist);
           if (sy < -30 || sy > GH + 30) return;
           const sx = laneX(it.lane);
-          ctx.font = 14 + "px serif";
+          ctx.font = "26px Arial";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           // Glow
-          ctx.shadowColor = "#ffd700";
-          ctx.shadowBlur = 10;
-          ctx.fillText(it.type.icon, sx, sy);
+          ctx.shadowColor = "#ffffff";
+          ctx.shadowBlur = 15;
+          ctx.fillText(it.type.icon, sx, sy - 5); // Shifted slightly up so it's not buried
           ctx.shadowBlur = 0;
         });
         // Oil slicks
