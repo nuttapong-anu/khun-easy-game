@@ -50,6 +50,89 @@
       .screen.active {
         display: flex;
       }
+      /* Modal Style */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 3000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        color: #fff;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+      }
+      .modal-content h3 {
+        color: #ff9800;
+        margin: 20px 0 10px;
+        font-size: 1.1rem;
+        border-bottom: 2px solid rgba(255, 152, 0, 0.3);
+        padding-bottom: 5px;
+      }
+      .modal-content h3:first-of-type {
+        margin-top: 0;
+      }
+      .modal-content p,
+      .modal-content li {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #ccc;
+        margin-bottom: 8px;
+      }
+      .modal-content ul {
+        padding-left: 20px;
+      }
+      .btn-info {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 12px 30px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        transition: all 0.2s;
+        z-index: 1000;
+        position: relative;
+        pointer-events: auto;
+      }
+      .btn-info:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
 
       /* Title */
       #titleScreen {
@@ -150,7 +233,7 @@
       }
       .shop-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1分數));
         gap: 12px;
         width: 100%;
         max-width: 600px;
@@ -489,15 +572,64 @@
       <div class="baht-display" id="titleBaht">💰 0 Baht</div>
       <div
         class="baht-display"
-        id="titleBest"
         style="
           margin-top: 8px;
           background: rgba(255, 111, 0, 0.1);
           border-color: rgba(255, 111, 0, 0.2);
           color: #ffab40;
         "
+        id="titleBest"
       >
         🏆 Best Wave: 0
+      </div>
+      <button class="btn-info" onclick="toggleModal('howToModal', true)">
+        ❓ วิธีเล่น
+      </button>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="toggleModal('howToModal', false)">
+          ✕
+        </button>
+        <h2 style="text-align: center; color: #fff; margin-bottom: 20px">
+          🏰 วิธีเล่น
+        </h2>
+
+        <h3>💰 ระบบเงินตรา</h3>
+        <ul>
+          <li>
+            <strong>บาท (฿)</strong>: ได้จากการผ่านด่าน
+            ใช้ซื้อตัวป้องกันใหม่ในร้านค้า
+          </li>
+          <li>
+            <strong>เหรียญ (🪙)</strong>: ได้จากการสังหารมอนสเตอร์
+            ใช้วางตัวป้องกันลงสนาม
+          </li>
+        </ul>
+
+        <h3>🛡️ ตัวป้องกัน</h3>
+        <p>
+          Soldier, Sniper, Tesla, Ice, Fire, SuperSeiya และ Chrono
+          (ช่วยลดคูลดาวน์ตัวป้องกันใกล้เคียง)
+        </p>
+        <p>
+          <strong>อัพเกรด</strong>: แตะตัวป้องกันที่วางไว้เพื่ออัพเกรด (สูงสุด
+          Lv.3) หรือขายคืน 50%
+        </p>
+
+        <h3>🗺️ แผนที่</h3>
+        <p>
+          เลือกจาก 3 แผนที่: ป่า, ทะเลทราย หรือ น้ำแข็ง
+          แต่ละแผนที่มีเส้นทางมอนสเตอร์ต่างกัน
+        </p>
+
+        <h3>👾 เป้าหมาย</h3>
+        <p>
+          เอาตัวรอดให้ครบ 50 เวฟ! อย่าให้มอนสเตอร์ไปถึงฐาน ถ้า HP
+          ฐานหมดถือว่าแพ้!
+        </p>
       </div>
     </div>
 
@@ -559,6 +691,9 @@
     </div>
 
     <script>
+      function toggleModal(id, show) {
+        document.getElementById(id).classList.toggle("active", show);
+      }
       // ── CONSTANTS ──
       const COLS = 8,
         ROWS = 12;
@@ -921,7 +1056,6 @@
           .forEach((o) => o.classList.remove("active"));
         if (id) document.getElementById(id).classList.add("active");
       }
-
       // ── SHOP ──
       function showShop() {
         showScreen("shopScreen");

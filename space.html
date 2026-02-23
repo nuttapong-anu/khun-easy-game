@@ -208,6 +208,89 @@
           opacity: 1;
         }
       }
+      /* Modal Style */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 3000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        color: #fff;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+      }
+      .modal-content h3 {
+        color: #7c4dff;
+        margin: 20px 0 10px;
+        font-size: 1.1rem;
+        border-bottom: 2px solid rgba(124, 77, 255, 0.3);
+        padding-bottom: 5px;
+      }
+      .modal-content h3:first-of-type {
+        margin-top: 0;
+      }
+      .modal-content p,
+      .modal-content li {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #ccc;
+        margin-bottom: 8px;
+        text-align: left;
+      }
+      .modal-content ul {
+        padding-left: 20px;
+        text-align: left;
+      }
+      .btn-info {
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        transition: all 0.2s;
+        z-index: 100;
+        letter-spacing: 1px;
+      }
+      .btn-info:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
       #overlay {
         position: fixed;
         inset: 0;
@@ -340,6 +423,52 @@
           🌟 Best: <span id="bestStageText">Stage 1</span>
         </div>
       </div>
+      <button class="btn-info" onclick="toggleModal('howToModal', true)">
+        ❓ วิธีเล่น
+      </button>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="toggleModal('howToModal', false)">
+          ✕
+        </button>
+        <h2 style="text-align: center; color: #fff; margin-bottom: 20px">
+          🚀 วิธีเล่น
+        </h2>
+
+        <h3>🎮 การควบคุม</h3>
+        <ul>
+          <li><strong>คอมพิวเตอร์</strong>: ปุ่มลูกศรเพื่อเคลื่อนที่</li>
+          <li><strong>มือถือ</strong>: ปุ่มบนหน้าจอ (▲▼◀▶)</li>
+          <li><strong>ยิง</strong>: ยานยิงอัตโนมัติ!</li>
+        </ul>
+
+        <h3>⚔️ การต่อสู้</h3>
+        <p>
+          ทำลายศัตรูเป็นระลอก แต่ละด่านมีบอสสุดโหดรออยู่ อย่าให้หัวใจ ❤️ หมด!
+        </p>
+
+        <h3>🔫 อาวุธ</h3>
+        <p>เก็บไอคอนที่ศัตรูทิ้งเพื่อเปลี่ยนอาวุธ:</p>
+        <ul>
+          <li>🔫 <strong>ธรรมดา</strong>: ยิงปกติ</li>
+          <li>🔥 <strong>คู่</strong>: ยิงสองแถว</li>
+          <li>🌟 <strong>กระจาย</strong>: ยิงกว้าง</li>
+          <li>⚡ <strong>เลเซอร์</strong>: พลังทำลายสูง</li>
+          <li>🚀 <strong>มิสไซล์</strong>: กระสุนระเบิด</li>
+          <li>🔮 <strong>พลาสม่า</strong>: ช้าแต่แรง</li>
+          <li>⛓️ <strong>สายฟ้า</strong>: ยิงเร็วต่อเนื่อง</li>
+          <li>💫 <strong>คลื่นกระแทก</strong>: ระเบิดป้องกัน</li>
+        </ul>
+
+        <h3>🌌 ด่าน</h3>
+        <p>
+          ผจญภัย 5 เขตจักรวาล: แถบดาวเคราะห์น้อย, โซนเนบิวลา, เขตมืด, เนบิวลาแดง
+          และ เหวสุญญากาศ
+        </p>
+      </div>
     </div>
     <div id="hud">
       <div class="hud-row">
@@ -375,6 +504,9 @@
     </div>
     <canvas id="c"></canvas>
     <script>
+      function toggleModal(id, show) {
+        document.getElementById(id).classList.toggle("active", show);
+      }
       const C = document.getElementById("c"),
         X = C.getContext("2d");
 

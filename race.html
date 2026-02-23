@@ -263,6 +263,10 @@
         cursor: pointer;
         border: 1px solid rgba(255, 215, 0, 0.3);
       }
+      .hud-dist {
+        background: rgba(76, 175, 80, 0.15);
+        color: #76ff03;
+      }
       #touchControls {
         position: fixed;
         bottom: 15px;
@@ -363,6 +367,86 @@
         display: none;
         pointer-events: none;
       }
+
+      /* Modal Style */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 300;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        color: #fff;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+      }
+      .modal-content h3 {
+        color: #e040fb;
+        margin: 20px 0 10px;
+        font-size: 1.2rem;
+        border-bottom: 2px solid rgba(224, 64, 251, 0.3);
+        padding-bottom: 5px;
+      }
+      .modal-content h3:first-of-type {
+        margin-top: 0;
+      }
+      .modal-content p,
+      .modal-content li {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #ccc;
+        margin-bottom: 8px;
+      }
+      .modal-content ul {
+        padding-left: 20px;
+      }
+      .btn-info {
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      .btn-info:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
     </style>
   </head>
   <body>
@@ -372,6 +456,55 @@
       <h2>RACING</h2>
       <button class="btn-main" onclick="showGarage()">▶ START</button>
       <div class="coin-display" id="titleCoins">🪙 0</div>
+      <button class="btn-info" onclick="toggleModal('howToModal', true)">
+        ❓ วิธีเล่น
+      </button>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="toggleModal('howToModal', false)">
+          ✕
+        </button>
+        <h2 style="text-align: center; color: #fff; margin-bottom: 20px">
+          🏁 วิธีเล่น
+        </h2>
+
+        <h3>🎮 การควบคุม</h3>
+        <ul>
+          <li>
+            <strong>คอมพิวเตอร์</strong>: ปุ่มลูกศรบังคับทิศ, Spacebar ใช้ไอเทม
+          </li>
+          <li>
+            <strong>มือถือ</strong>: ปุ่มบนหน้าจอบังคับทิศ, แตะช่องไอเทมเพื่อใช้
+          </li>
+        </ul>
+
+        <h3>🚗 กฎการแข่ง</h3>
+        <p>
+          แข่งกับ AI 4 คัน ใน 5 เลน ไปให้ถึงเส้นชัย (12 กม.) ให้เร็วที่สุด!
+          อันดับยิ่งดี 🪙 รางวัลยิ่งเยอะ!
+        </p>
+
+        <h3>📦 ไอเทม</h3>
+        <ul>
+          <li>🚀 <strong>บูสต์</strong>: เร่งความเร็วชั่วคราว</li>
+          <li>🛡️ <strong>โล่</strong>: ป้องกันการโจมตี 1 ครั้ง</li>
+          <li>🔥 <strong>จรวด</strong>: ยิงใส่รถข้างหน้า</li>
+          <li>⚡ <strong>ช็อต</strong>: ช็อตคู่แข่งรอบข้าง</li>
+          <li>
+            🛢️ <strong>น้ำมัน</strong>: ทิ้งไว้ข้างหลังเพื่อทำให้คนอื่นช้าลง
+          </li>
+          <li>❤️ <strong>ซ่อม</strong>: ฟื้นฟู HP 50%</li>
+        </ul>
+
+        <h3>🏎️ รถแข่ง</h3>
+        <p>
+          สะสมเหรียญเพื่อปลดล็อกรถที่ดีกว่า พร้อมอาวุธและสเตตัสเฉพาะ (ความเร็ว,
+          อัตราเร่ง, HP, การบังคับ)
+        </p>
+      </div>
     </div>
     <div id="garageScreen" class="screen">
       <a href="index.html" class="home-btn">🏠 Home</a>
@@ -380,6 +513,21 @@
         <div class="coin-display" id="garageCoins">🪙 0</div>
       </div>
       <div class="shop-grid" id="carGrid"></div>
+      <div
+        style="width: 100%; max-width: 600px; padding: 0 5px; margin-top: 15px"
+      >
+        <div
+          style="
+            color: #fff;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 8px;
+          "
+        >
+          🏟️ SELECT TRACK
+        </div>
+        <div class="shop-grid" id="trackGrid"></div>
+      </div>
       <div class="shop-bottom">
         <button class="btn-main" onclick="startRace()">🏁 RACE!</button>
       </div>
@@ -396,6 +544,7 @@
           onclick="useSpecial()"
           >📦 ---</span
         >
+        <span class="hud-item hud-dist" id="hudDist">📍 0 / 12 km</span>
       </div>
     </div>
     <div id="touchControls">
@@ -420,11 +569,50 @@
     <div id="countdown"></div>
 
     <script>
+      function toggleModal(id, show) {
+        document.getElementById(id).classList.toggle("active", show);
+      }
       // ── CONSTANTS ──
       const RACE_DIST = 12000,
         NUM_RACERS = 5,
         LANES = 5;
       const REWARDS = [150, 100, 70, 40, 15];
+      const TRACKS = [
+        {
+          id: "city",
+          name: "City Night",
+          icon: "🏙️",
+          bg: "#1a1a2e",
+          grass: "#1a3d0c",
+          grassD: "#245210",
+          road: "#333",
+          edge: "#fff",
+          lane: "rgba(255,255,255,.2)",
+        },
+        {
+          id: "desert",
+          name: "Desert Highway",
+          icon: "🏜️",
+          bg: "#3b2a15",
+          grass: "#8B7355",
+          grassD: "#9C8565",
+          road: "#5a4a35",
+          edge: "#d4a04a",
+          lane: "rgba(255,200,80,.2)",
+        },
+        {
+          id: "forest",
+          name: "Forest Road",
+          icon: "🌲",
+          bg: "#0a1a0a",
+          grass: "#1e4420",
+          grassD: "#2a5c2e",
+          road: "#2a2a2a",
+          edge: "#8bc34a",
+          lane: "rgba(139,195,74,.2)",
+        },
+      ];
+      let currentTrack = 0;
       const CARS = [
         {
           id: "runner",
@@ -525,12 +713,24 @@
       // ── CANVAS ──
       const canvas = document.getElementById("gameCanvas"),
         ctx = canvas.getContext("2d");
+      const ASPECT = 9 / 16;
       let GW, GH;
       function resize() {
-        canvas.width = innerWidth;
-        canvas.height = innerHeight;
-        GW = innerWidth;
-        GH = innerHeight;
+        let ww = innerWidth,
+          wh = innerHeight;
+        if (ww / wh > ASPECT) {
+          GH = wh;
+          GW = Math.floor(wh * ASPECT);
+        } else {
+          GW = ww;
+          GH = Math.floor(ww / ASPECT);
+        }
+        canvas.width = GW;
+        canvas.height = GH;
+        canvas.style.width = GW + "px";
+        canvas.style.height = GH + "px";
+        canvas.style.left = Math.floor((ww - GW) / 2) + "px";
+        canvas.style.top = Math.floor((wh - GH) / 2) + "px";
       }
       resize();
       addEventListener("resize", resize);
@@ -559,6 +759,7 @@
         localStorage.setItem("rr_coins", coins);
         localStorage.setItem("rr_owned", JSON.stringify(ownedCars));
         localStorage.setItem("rr_selected", selectedCar);
+        localStorage.setItem("rr_track", currentTrack);
       }
       function load() {
         coins = parseInt(localStorage.getItem("rr_coins") || "0");
@@ -572,6 +773,7 @@
         if (!ownedCars.includes("runner")) ownedCars.unshift("runner");
         selectedCar = localStorage.getItem("rr_selected") || "runner";
         if (!ownedCars.includes(selectedCar)) selectedCar = "runner";
+        currentTrack = parseInt(localStorage.getItem("rr_track") || "0");
       }
 
       // ── SCREEN ──
@@ -613,6 +815,7 @@
         });
         document.getElementById("garageCoins").textContent = "🪙 " + coins;
         document.getElementById("titleCoins").textContent = "🪙 " + coins;
+        renderTracks();
       }
       function selectCar(id) {
         selectedCar = id;
@@ -627,6 +830,17 @@
         selectedCar = id;
         save();
         renderGarage();
+      }
+      function renderTracks() {
+        const g = document.getElementById("trackGrid");
+        if (!g) return;
+        g.innerHTML = "";
+        TRACKS.forEach((t, i) => {
+          g.innerHTML += `<div class="car-card ${currentTrack === i ? "selected" : "owned"}" onclick="currentTrack=${i};save();renderTracks()">
+            <div class="car-icon">${t.icon}</div><div class="car-name">${t.name}</div>
+            ${currentTrack === i ? '<div class="shop-badge">✓ SELECTED</div>' : ""}
+          </div>`;
+        });
       }
 
       // ── ROAD HELPERS ──
@@ -667,6 +881,7 @@
           this.finished = false;
           this.finishPos = 0;
           this.spinTimer = 0;
+          this.bumpCD = 0;
           this.color = type.color;
           this.aiLT = 2 + Math.random() * 3;
         }
@@ -685,9 +900,20 @@
           if (this.stunTimer > 0) this.stunTimer -= dt;
           if (this.boostTimer > 0) this.boostTimer -= dt;
           if (this.oilTimer > 0) this.oilTimer -= dt;
+          if (this.bumpCD > 0) this.bumpCD -= dt;
           if (this.spinTimer > 0) {
             this.spinTimer -= dt;
             this.speed = Math.max(0, this.speed - 150 * dt);
+            // Still allow lane transition during spin
+            const tx = laneX(this.targetLane);
+            const dx = tx - this.laneX;
+            if (Math.abs(dx) > 1) {
+              const step = Math.min(Math.abs(dx), this.handling * 60 * dt);
+              this.laneX += Math.sign(dx) * step;
+            } else {
+              this.laneX = tx;
+              this.lane = this.targetLane;
+            }
             return;
           }
           this.weaponTimer -= dt;
@@ -715,7 +941,8 @@
           const tx = laneX(this.targetLane);
           const dx = tx - this.laneX;
           if (Math.abs(dx) > 1) {
-            this.laneX += Math.sign(dx) * this.handling * 60 * dt;
+            const step = Math.min(Math.abs(dx), this.handling * 60 * dt);
+            this.laneX += Math.sign(dx) * step;
           } else {
             this.laneX = tx;
             this.lane = this.targetLane;
@@ -930,6 +1157,10 @@
         document.getElementById("hudSpecial").textContent = p.special
           ? ITEM_TYPES.find((i) => i.id === p.special).icon + " USE"
           : "📦 ---";
+        const distKm = (Math.min(p.dist, RACE_DIST) / 1000).toFixed(1);
+        const totalKm = (RACE_DIST / 1000).toFixed(0);
+        document.getElementById("hudDist").textContent =
+          "📍 " + distKm + " / " + totalKm + " km";
       }
 
       function useSpecial() {
@@ -1058,6 +1289,7 @@
             const a = racers[i],
               b = racers[j];
             if (a.finished || b.finished) continue;
+            if (a.bumpCD > 0 || b.bumpCD > 0) continue;
             if (
               Math.abs(a.laneX - b.laneX) < laneW() * 0.7 &&
               Math.abs(a.dist - b.dist) < 25
@@ -1065,8 +1297,10 @@
               const dmg = Math.abs(a.speed - b.speed) * 0.05 + 2;
               a.hit(dmg);
               b.hit(dmg);
-              if (a.dist > b.dist) b.dist -= 5;
-              else a.dist -= 5;
+              a.bumpCD = 1;
+              b.bumpCD = 1;
+              if (a.dist > b.dist) b.dist -= 30;
+              else a.dist -= 30;
             }
           }
         }
@@ -1091,7 +1325,8 @@
       // ── RENDER ──
       function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#1a1a2e";
+        const trk = TRACKS[currentTrack];
+        ctx.fillStyle = trk.bg;
         ctx.fillRect(0, 0, GW, GH);
         if (gameState === "title" || gameState === "garage") return;
         const player = racers.find((r) => r.isPlayer);
@@ -1101,29 +1336,29 @@
           rL = roadL(),
           lW = laneW();
         // Grass
-        ctx.fillStyle = "#1a3d0c";
+        ctx.fillStyle = trk.grass;
         ctx.fillRect(0, 0, rL, GH);
         ctx.fillRect(rL + rW, 0, GW - rL - rW, GH);
         // Grass detail
         const grassOff = (player.dist * 0.3) % 40;
-        ctx.fillStyle = "#245210";
+        ctx.fillStyle = trk.grassD;
         for (let y = -40 + grassOff; y < GH; y += 40) {
           for (let x = 10; x < rL - 5; x += 25) ctx.fillRect(x, y, 3, 8);
           for (let x = rL + rW + 10; x < GW - 5; x += 25)
             ctx.fillRect(x, y, 3, 8);
         }
         // Road
-        ctx.fillStyle = "#333";
+        ctx.fillStyle = trk.road;
         ctx.fillRect(rL, 0, rW, GH);
         // Road edges
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = trk.edge;
         ctx.fillRect(rL - 2, 0, 3, GH);
         ctx.fillRect(rL + rW - 1, 0, 3, GH);
         // Lane dividers (dashed)
         const dashH = 30,
           gapH = 30,
           scrollOff = player.dist % (dashH + gapH);
-        ctx.fillStyle = "rgba(255,255,255,.2)";
+        ctx.fillStyle = trk.lane;
         for (let i = 1; i < LANES; i++) {
           const x = rL + i * lW - 1;
           for (let y = -dashH + scrollOff; y < GH; y += dashH + gapH) {
@@ -1174,69 +1409,162 @@
           if (sy < -60 || sy > GH + 60) return;
           const sx = r.laneX;
           const cw = lW * 0.55,
-            ch = lW * 0.9;
+            ch = lW * 1.0;
+          const hw = cw / 2,
+            hh = ch / 2;
           // Shadow
           ctx.fillStyle = "rgba(0,0,0,.3)";
           ctx.beginPath();
-          ctx.ellipse(sx, sy + ch * 0.4, cw * 0.5, 6, 0, 0, Math.PI * 2);
+          ctx.ellipse(sx, sy + hh + 4, hw * 0.9, 5, 0, 0, Math.PI * 2);
           ctx.fill();
-          // Car body
           ctx.save();
-          if (r.spinTimer > 0)
-            (ctx.translate(sx, sy),
-              ctx.rotate(r.spinTimer * 8),
-              ctx.translate(-sx, -sy));
+          if (r.spinTimer > 0) {
+            ctx.translate(sx, sy);
+            ctx.rotate(r.spinTimer * 8);
+            ctx.translate(-sx, -sy);
+          }
+          // Wheels (black with chrome rim)
+          const ww = cw * 0.18,
+            wh = cw * 0.32;
+          const wx = hw + 1,
+            wyF = -hh * 0.55,
+            wyR = hh * 0.4;
+          [
+            [-wx, wyF],
+            [wx - ww, wyF],
+            [-wx, wyR],
+            [wx - ww, wyR],
+          ].forEach(([ox, oy]) => {
+            ctx.fillStyle = "#1a1a1a";
+            roundRect(ctx, sx + ox, sy + oy, ww, wh, 2);
+            ctx.fill();
+            ctx.fillStyle = "rgba(200,200,200,.3)";
+            ctx.fillRect(sx + ox + 1, sy + oy + wh * 0.3, ww - 2, 1);
+          });
+          // Main body (tapered front)
           ctx.fillStyle = r.color;
-          roundRect(ctx, sx - cw / 2, sy - ch / 2, cw, ch, 5);
+          ctx.beginPath();
+          ctx.moveTo(sx - hw * 0.6, sy - hh); // front left
+          ctx.lineTo(sx + hw * 0.6, sy - hh); // front right
+          ctx.lineTo(sx + hw, sy - hh * 0.4); // widen
+          ctx.lineTo(sx + hw, sy + hh * 0.7); // rear right
+          ctx.lineTo(sx + hw * 0.9, sy + hh); // rear corner
+          ctx.lineTo(sx - hw * 0.9, sy + hh); // rear left
+          ctx.lineTo(sx - hw, sy + hh * 0.7);
+          ctx.lineTo(sx - hw, sy - hh * 0.4);
+          ctx.closePath();
+          ctx.fill();
+          // Body highlight (top half)
+          ctx.fillStyle = "rgba(255,255,255,.12)";
+          ctx.beginPath();
+          ctx.moveTo(sx - hw * 0.55, sy - hh);
+          ctx.lineTo(sx + hw * 0.55, sy - hh);
+          ctx.lineTo(sx + hw * 0.3, sy - hh * 0.1);
+          ctx.lineTo(sx - hw * 0.3, sy - hh * 0.1);
+          ctx.closePath();
           ctx.fill();
           // Windshield
-          ctx.fillStyle = "rgba(100,200,255,.4)";
-          roundRect(ctx, sx - cw * 0.3, sy - ch * 0.25, cw * 0.6, ch * 0.18, 3);
+          ctx.fillStyle = "rgba(80,180,255,.35)";
+          ctx.beginPath();
+          ctx.moveTo(sx - hw * 0.45, sy - hh * 0.65);
+          ctx.lineTo(sx + hw * 0.45, sy - hh * 0.65);
+          ctx.lineTo(sx + hw * 0.6, sy - hh * 0.2);
+          ctx.lineTo(sx - hw * 0.6, sy - hh * 0.2);
+          ctx.closePath();
           ctx.fill();
-          // Stripe
-          ctx.fillStyle = "rgba(255,255,255,.15)";
-          ctx.fillRect(sx - 2, sy - ch / 2, 4, ch);
+          // Windshield frame
+          ctx.strokeStyle = "rgba(0,0,0,.25)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+          // Rear window
+          ctx.fillStyle = "rgba(80,180,255,.25)";
+          ctx.beginPath();
+          ctx.moveTo(sx - hw * 0.55, sy + hh * 0.1);
+          ctx.lineTo(sx + hw * 0.55, sy + hh * 0.1);
+          ctx.lineTo(sx + hw * 0.45, sy + hh * 0.35);
+          ctx.lineTo(sx - hw * 0.45, sy + hh * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          // Center stripe
+          ctx.fillStyle = "rgba(255,255,255,.1)";
+          ctx.fillRect(sx - 1, sy - hh, 2, ch);
+          // Headlights
+          ctx.shadowColor = "#ffeb3b";
+          ctx.shadowBlur = 4;
+          ctx.fillStyle = "#fff3b0";
+          ctx.fillRect(sx - hw * 0.4, sy - hh - 1, cw * 0.12, 3);
+          ctx.fillRect(sx + hw * 0.15, sy - hh - 1, cw * 0.12, 3);
+          ctx.shadowBlur = 0;
+          // Taillights
+          ctx.shadowColor = "#f44336";
+          ctx.shadowBlur = 3;
+          ctx.fillStyle = "#ff1744";
+          ctx.fillRect(sx - hw * 0.8, sy + hh - 2, cw * 0.15, 3);
+          ctx.fillRect(sx + hw * 0.5, sy + hh - 2, cw * 0.15, 3);
+          ctx.shadowBlur = 0;
+          // Side mirrors
+          ctx.fillStyle = r.color;
+          ctx.fillRect(sx - hw - 2, sy - hh * 0.3, 3, 2);
+          ctx.fillRect(sx + hw - 1, sy - hh * 0.3, 3, 2);
+          // Spoiler (for faster cars)
+          if (r.type.maxSpeed >= 220) {
+            ctx.fillStyle = "rgba(0,0,0,.4)";
+            ctx.fillRect(sx - hw * 0.7, sy + hh - 1, cw * 0.7, 2);
+          }
           // Shield glow
           if (r.shieldActive) {
             ctx.strokeStyle = "rgba(0,200,255,.6)";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.ellipse(sx, sy, cw * 0.6, ch * 0.55, 0, 0, Math.PI * 2);
+            ctx.ellipse(sx, sy, hw * 1.2, hh * 1.1, 0, 0, Math.PI * 2);
             ctx.stroke();
           }
-          // Boost trail
+          // Boost trail (dual exhaust)
           if (r.boostTimer > 0) {
-            ctx.fillStyle = "rgba(255,100,0,.5)";
-            ctx.beginPath();
-            ctx.moveTo(sx - cw * 0.3, sy + ch / 2);
-            ctx.lineTo(sx, sy + ch / 2 + 15 + Math.random() * 10);
-            ctx.lineTo(sx + cw * 0.3, sy + ch / 2);
-            ctx.fill();
+            const fl = 12 + Math.random() * 10;
+            [sx - hw * 0.3, sx + hw * 0.3].forEach((ex) => {
+              const grd = ctx.createLinearGradient(
+                ex,
+                sy + hh,
+                ex,
+                sy + hh + fl,
+              );
+              grd.addColorStop(0, "rgba(255,200,50,.8)");
+              grd.addColorStop(0.5, "rgba(255,80,0,.5)");
+              grd.addColorStop(1, "rgba(255,0,0,0)");
+              ctx.fillStyle = grd;
+              ctx.beginPath();
+              ctx.moveTo(ex - 3, sy + hh);
+              ctx.lineTo(ex, sy + hh + fl);
+              ctx.lineTo(ex + 3, sy + hh);
+              ctx.fill();
+            });
           }
           // Stun indicator
           if (r.stunTimer > 0 && r.spinTimer <= 0) {
             ctx.font = "10px serif";
             ctx.textAlign = "center";
-            ctx.fillText("💫", sx, sy - ch / 2 - 8);
+            ctx.fillText("\ud83d\udcab", sx, sy - hh - 8);
           }
           ctx.restore();
           // HP bar
-          const bw = cw,
+          const bw = cw * 1.1,
             bh = 3,
             bx = sx - bw / 2,
-            by = sy - ch / 2 - 6;
-          ctx.fillStyle = "#333";
-          ctx.fillRect(bx, by, bw, bh);
+            by = sy - hh - 7;
+          ctx.fillStyle = "#222";
+          roundRect(ctx, bx, by, bw, bh, 1);
+          ctx.fill();
           const hr = Math.max(0, r.hp / r.maxHp);
           ctx.fillStyle =
             hr > 0.5 ? "#4CAF50" : hr > 0.25 ? "#FF9800" : "#f44336";
-          ctx.fillRect(bx, by, bw * hr, bh);
+          ctx.fillRect(bx + 0.5, by + 0.5, (bw - 1) * hr, bh - 1);
           // Player indicator
           if (r.isPlayer) {
             ctx.fillStyle = "#e040fb";
             ctx.font = "bold 8px Outfit";
             ctx.textAlign = "center";
-            ctx.fillText("▼ YOU", sx, sy - ch / 2 - 12);
+            ctx.fillText("\u25bc YOU", sx, sy - hh - 13);
           }
         });
         // Projectiles

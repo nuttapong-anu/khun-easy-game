@@ -303,6 +303,87 @@
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
       }
 
+      /* Modal Style */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 2000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        color: #333;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #f0f0f0;
+        border: none;
+        color: #333;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+      }
+      .modal-content h3 {
+        color: #1976d2;
+        margin: 20px 0 10px;
+        font-size: 1.2rem;
+        border-bottom: 2px solid rgba(25, 118, 210, 0.2);
+        padding-bottom: 5px;
+      }
+      .modal-content h3:first-of-type {
+        margin-top: 0;
+      }
+      .modal-content p,
+      .modal-content li {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #444;
+        margin-bottom: 8px;
+      }
+      .modal-content ul {
+        padding-left: 20px;
+      }
+      .btn-info {
+        margin-top: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        border: 2px solid #fff;
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .btn-info:hover {
+        background: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+
       /* HUD */
       #hud {
         position: fixed;
@@ -1171,6 +1252,48 @@
         <span>📏</span>
         <span>Best Distance: <span id="menuHighDistance">0</span> m</span>
       </div>
+      <button class="btn-info" onclick="toggleModal('howToModal', true)">
+        ❓ วิธีเล่น
+      </button>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToModal" class="modal-overlay">
+      <div class="modal-content">
+        <button class="modal-close" onclick="toggleModal('howToModal', false)">
+          ✕
+        </button>
+        <h2 style="text-align: center; color: #1976d2; margin-bottom: 20px">
+          ✈️ วิธีเล่น
+        </h2>
+
+        <h3>🎮 การควบคุม</h3>
+        <p>
+          บังคับเครื่องบินด้วย <strong>เมาส์</strong> หรือ
+          <strong>สัมผัสหน้าจอ</strong> เครื่องบินจะตามนิ้วของคุณ!
+        </p>
+
+        <h3>⛽ การเอาตัวรอด</h3>
+        <p>
+          เก็บ <strong>สถานีเติมน้ำมัน</strong> ⛽ เพื่อบินต่อ
+          ถ้าน้ำมันหมดหรือชนสิ่งกีดขวาง จบเกม!
+        </p>
+
+        <h3>📦 ไอเทม</h3>
+        <ul>
+          <li>🪙 <strong>เหรียญ</strong>: เก็บเพื่อเพิ่มคะแนน</li>
+          <li>⛽ <strong>น้ำมัน</strong>: เติมแถบน้ำมัน</li>
+        </ul>
+
+        <h3>🛩️ เครื่องบิน</h3>
+        <p>ปลดล็อกเครื่องบินใหม่ด้วยคะแนนสูง:</p>
+        <ul>
+          <li>🟢 <strong>เขียว</strong>: ง่าย - บินนิ่ง</li>
+          <li>🔵 <strong>น้ำเงิน</strong>: ปานกลาง - ได้แต้มเยอะ</li>
+          <li>🔴 <strong>แดง</strong>: ยาก - เร็วและท้าทาย</li>
+          <li>🟣 <strong>ม่วง</strong>: ผู้เชี่ยวชาญ - ความเร็วสุดขีด</li>
+        </ul>
+      </div>
     </div>
 
     <!-- HUD -->
@@ -1204,11 +1327,17 @@
           <span class="coin-icon">⭐</span>
           <span id="score">0</span>
         </div>
-        <div class="distance-display">
+        <div class="high-distance-display">
           <span class="distance-icon">📏</span>
-          <span id="distance">0 m</span>
+          Best: <span id="hiDistText">0</span>m
         </div>
-        <button class="exit-btn" onclick="confirmExit()">✕ Exit</button>
+        <button
+          class="exit-btn"
+          style="margin-bottom: 0"
+          onclick="confirmExit()"
+        >
+          ✕ Exit
+        </button>
       </div>
     </div>
 
@@ -1257,6 +1386,9 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
+      function toggleModal(id, show) {
+        document.getElementById(id).classList.toggle("active", show);
+      }
       // Game Constants
       const CANVAS = document.getElementById("gameCanvas");
       const CTX = CANVAS.getContext("2d");
