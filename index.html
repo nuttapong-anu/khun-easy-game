@@ -226,6 +226,16 @@
         color: #e65100;
       }
 
+      .card.race .icon-circle {
+        background: linear-gradient(135deg, #e040fb, #ff4081);
+      }
+      .card.race:hover {
+        border-top: 4px solid #ff4081;
+      }
+      .card.race .btn {
+        color: #e040fb;
+      }
+
       .card.future {
         opacity: 0.6;
         cursor: default;
@@ -325,12 +335,24 @@
         <div class="btn">Defend Now</div>
       </a>
 
-      <div class="card future">
-        <div class="icon-circle">🏃</div>
+      <a href="race.html" class="card race">
+        <div class="badge">NEW!</div>
+        <div class="icon-circle">🏁</div>
         <div>
-          <div class="title">Ninja Run</div>
+          <div class="title">Road Rage</div>
           <div class="desc">
-            Master the art of stealth and speed in this endless runner.
+            Race, ram, and blast your way to the finish in this combat racer.
+          </div>
+        </div>
+        <div class="btn">Race Now</div>
+      </a>
+
+      <div class="card future">
+        <div class="icon-circle">🎮</div>
+        <div>
+          <div class="title">More Games</div>
+          <div class="desc">
+            More exciting games are coming soon. Stay tuned!
           </div>
         </div>
         <div class="btn">Coming Soon</div>
