@@ -402,5 +402,15 @@
         <div class="btn">Coming Soon</div>
       </div>
     </div>
+    <script>
+      // Load global Khuno balance on portal load
+      document.addEventListener("DOMContentLoaded", () => {
+        let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || "0");
+        let balanceEl = document.getElementById("globalKhunoBalance");
+        if (balanceEl) {
+          balanceEl.innerText = globalKhuno;
+        }
+      });
+    </script>
   </body>
 </html>

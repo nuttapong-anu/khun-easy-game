@@ -1035,6 +1035,11 @@
       // ── STATE ──
       let sessionKhuno = 0;
       let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const titleEl = document.getElementById("khunoBalTitle");
+        if (titleEl) titleEl.innerText = globalKhuno;
+      });
       let owned = ["soldier"];
       let coins = 100,
         baseHP = 100,

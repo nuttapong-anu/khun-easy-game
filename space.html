@@ -683,6 +683,12 @@
 
       // ── GAME STATE ──
       let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const el = document.getElementById("khunoBalTitle");
+        if (el) el.innerText = globalKhuno;
+      });
+
       let sessionKhuno = 0;
       let G = {
         state: "title",

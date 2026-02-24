@@ -1500,6 +1500,11 @@
       // Game State
       let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
 
+      document.addEventListener("DOMContentLoaded", () => {
+        const el = document.getElementById("khunoBalTitle");
+        if (el) el.innerText = globalKhuno;
+      });
+
       let gameState = {
         isPlaying: false,
         sessionKhuno: 0,

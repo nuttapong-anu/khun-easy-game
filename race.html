@@ -849,6 +849,12 @@
         currentTrack = parseInt(localStorage.getItem("rr_track") || "0");
       }
 
+      document.addEventListener("DOMContentLoaded", () => {
+        const tEl = document.getElementById("titleCoins");
+        if (tEl)
+          tEl.innerText = parseInt(localStorage.getItem("khunoCoins") || "0");
+      });
+
       // ── SCREEN ──
       function showScreen(id) {
         document
