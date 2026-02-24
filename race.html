@@ -267,6 +267,13 @@
         background: rgba(76, 175, 80, 0.15);
         color: #76ff03;
       }
+      .hud-exit {
+        background: rgba(244, 67, 54, 0.8);
+        color: #fff;
+        pointer-events: auto;
+        cursor: pointer;
+        border: 1px solid rgba(244, 67, 54, 0.5);
+      }
       #touchControls {
         position: fixed;
         bottom: 15px;
@@ -486,6 +493,10 @@
           แข่งกับ AI 4 คัน ใน 5 เลน ไปให้ถึงเส้นชัย (12 กม.) ให้เร็วที่สุด!
           อันดับยิ่งดี 🪙 รางวัลยิ่งเยอะ!
         </p>
+        <p>
+          ⚠️ <strong>ระวังอุปสรรคข้างทาง!</strong> หากขับชนต้นไม้, หิน
+          หรือป้ายบอกทาง จะทำให้ความเร็วตกอย่างรวดเร็ว
+        </p>
 
         <h3>📦 ไอเทม</h3>
         <ul>
@@ -498,6 +509,11 @@
           </li>
           <li>❤️ <strong>ซ่อม</strong>: ฟื้นฟู HP 50%</li>
         </ul>
+        <h3>🚪 ระบบเสริม</h3>
+        <p>
+          คุณสามารถกดปุ่ม
+          <strong>EXIT</strong> มุมขวาบนเพื่อออกจากการแข่งขันกลางคันได้ทุกเมื่อ
+        </p>
 
         <h3>🏎️ รถแข่ง</h3>
         <p>
@@ -545,6 +561,7 @@
           >📦 ---</span
         >
         <span class="hud-item hud-dist" id="hudDist">📍 0 / 12 km</span>
+        <span class="hud-item hud-exit" onclick="exitRace()">🚪 EXIT</span>
       </div>
     </div>
     <div id="touchControls">
@@ -588,6 +605,7 @@
           road: "#333",
           edge: "#fff",
           lane: "rgba(255,255,255,.2)",
+          objects: ["🏢", "🏬", "🏣", "💡", "🌳", "🚦"],
         },
         {
           id: "desert",
@@ -599,6 +617,7 @@
           road: "#5a4a35",
           edge: "#d4a04a",
           lane: "rgba(255,200,80,.2)",
+          objects: ["🌵", "🐪", "💀", "🪨", "🏜️"],
         },
         {
           id: "forest",
@@ -610,6 +629,7 @@
           road: "#2a2a2a",
           edge: "#8bc34a",
           lane: "rgba(139,195,74,.2)",
+          objects: ["🌲", "🌳", "🍄", "🏕️", "🦌", "🪵"],
         },
       ];
       let currentTrack = 0;
@@ -744,7 +764,8 @@
         raceItems = [],
         projectiles = [],
         particles = [],
-        oilSlicks = [];
+        oilSlicks = [],
+        roadsideObjects = [];
       let keys = { up: false, down: false, left: false, right: false };
       let touchU = false,
         touchD = false,
@@ -1096,6 +1117,7 @@
         particles = [];
         oilSlicks = [];
         raceItems = [];
+        roadsideObjects = [];
         finishOrder = [];
         raceTime = 0;
         const playerType = CARS.find((c) => c.id === selectedCar) || CARS[0];
@@ -1117,6 +1139,38 @@
             collected: false,
           });
         }
+        // Generate roadside objects
+        const trkConfig = TRACKS[currentTrack];
+        if (trkConfig.objects) {
+          for (
+            let d = -1000;
+            d < RACE_DIST + 2000;
+            d += 60 + Math.random() * 100
+          ) {
+            // Left side
+            roadsideObjects.push({
+              dist: d + (Math.random() - 0.5) * 50,
+              isLeft: true,
+              offsetX: -30 - Math.random() * 150,
+              icon: trkConfig.objects[
+                Math.floor(Math.random() * trkConfig.objects.length)
+              ],
+              size: 25 + Math.random() * 25,
+            });
+            // Right side
+            roadsideObjects.push({
+              dist: d + (Math.random() - 0.5) * 50,
+              isLeft: false,
+              offsetX: 30 + Math.random() * 150,
+              icon: trkConfig.objects[
+                Math.floor(Math.random() * trkConfig.objects.length)
+              ],
+              size: 25 + Math.random() * 25,
+            });
+          }
+          // Sort by dist descending so further objects are drawn first
+          roadsideObjects.sort((a, b) => b.dist - a.dist);
+        }
         document.getElementById("raceHud").style.display = "block";
         document.getElementById("touchControls").style.display = "flex";
         // Countdown
@@ -1124,7 +1178,8 @@
         const el = document.getElementById("countdown");
         el.style.display = "block";
         el.textContent = c;
-        const ci = setInterval(() => {
+        if (window.countdownInterval) clearInterval(window.countdownInterval);
+        window.countdownInterval = setInterval(() => {
           c--;
           if (c > 0) {
             el.textContent = c;
@@ -1132,7 +1187,7 @@
             el.textContent = "GO!";
             el.style.color = "#76ff03";
           } else {
-            clearInterval(ci);
+            clearInterval(window.countdownInterval);
             el.style.display = "none";
             el.style.color = "#fff";
             gameState = "racing";
@@ -1376,6 +1431,33 @@
             ctx.fillRect(cx, cy - 5, rW / 20, 10);
           }
         }
+        // Roadside Objects
+        roadsideObjects.forEach((obj) => {
+          const sy = playerScreenY - (obj.dist - player.dist);
+          if (sy < -60 || sy > GH + 60) return;
+          const sx = obj.isLeft ? rL + obj.offsetX : rL + rW + obj.offsetX;
+
+          ctx.font = obj.size + "px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+
+          // Shadow
+          ctx.fillStyle = "rgba(0,0,0,0.4)";
+          ctx.beginPath();
+          ctx.ellipse(
+            sx,
+            sy,
+            obj.size * 0.4,
+            obj.size * 0.15,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+
+          ctx.fillStyle = "#fff"; // Default text color for emoji rendering
+          ctx.fillText(obj.icon, sx, sy - 2);
+        });
         // Items
         raceItems.forEach((it) => {
           if (it.collected) return;
@@ -1685,6 +1767,16 @@
       function backToGarage() {
         document.getElementById("resultOverlay").classList.remove("active");
         showGarage();
+      }
+
+      // ── EXIT RACE ──
+      function exitRace() {
+        if (confirm("คุณแน่ใจหรือไม่ว่าต้องการออกจากสนามแข่ง?")) {
+          if (window.countdownInterval) clearInterval(window.countdownInterval);
+          document.getElementById("countdown").style.display = "none";
+          gameState = "garage";
+          showGarage();
+        }
       }
 
       // ── INPUT ──

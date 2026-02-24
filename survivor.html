@@ -185,6 +185,58 @@
         border-radius: 50%;
         pointer-events: none;
       }
+      /* Character Cards */
+      .char-card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        width: 160px;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        cursor: pointer;
+      }
+      .char-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      }
+      .char-card h3 {
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+      }
+      .char-card p {
+        font-size: 0.8rem;
+        color: #bbb;
+        margin-bottom: 10px;
+      }
+      .price-btn {
+        background: #fbc02d;
+        color: #333;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 5px;
+        transition: background 0.2s;
+      }
+      .price-btn:hover {
+        background: #fdd835;
+      }
+      .play-btn {
+        background: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
@@ -203,7 +255,18 @@
         🏆 Best Time: <span id="titleBestTime">00:00</span> | 🌟 Max Lv:
         <span id="titleBestLevel">1</span>
       </div>
-      <button class="btn-main" onclick="startGame()">▶ Play</button>
+      <div
+        style="
+          font-size: 1.5rem;
+          color: #fbc02d;
+          margin-bottom: 20px;
+          font-weight: bold;
+          text-shadow: 1px 1px 2px #000;
+        "
+      >
+        💰 <span id="titleTotalBaht">0</span> ฿
+      </div>
+      <button class="btn-main" onclick="showCharSelect()">▶ Play</button>
       <button
         class="home-btn"
         style="
@@ -246,6 +309,11 @@
             <strong>เก็บคริสตัลสีฟ้า (EXP)</strong> เพื่อเพิ่มเลเวล
           </li>
           <li>
+            💰 <strong>เหรียญบาท (Baht)</strong>:
+            มอนสเตอร์มีโอกาสดรอปเหรียญเงินเพื่อนำมาสะสม
+            สำหรับใช้ปลดล็อคตัวละครใหม่ (Knight, Ranger) ที่หน้าแรก
+          </li>
+          <li>
             🎁 <strong>ไอเทมพิเศษ</strong>: มอนสเตอร์มีโอกาสดรอป ❤️ (ฮีล), 💣
             (ระเบิดมอนสเตอร์ทั้งจอ), หรือ 🧲 (ดูดคริสตัลทั้งหมด)
           </li>
@@ -276,6 +344,93 @@
       </div>
     </div>
 
+    <!-- Character Select Screen -->
+    <div id="charSelectScreen" class="screen">
+      <h2 style="font-size: 2.5rem; color: #ffab40; margin-bottom: 5px">
+        Select Hero
+      </h2>
+      <div style="font-size: 1.2rem; margin-bottom: 20px; color: #fbc02d">
+        💰 <span id="charSelectBaht">0</span> ฿
+      </div>
+
+      <div
+        style="
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          justify-content: center;
+          max-width: 600px;
+          margin-bottom: 20px;
+        "
+      >
+        <!-- Mage -->
+        <div class="char-card">
+          <div style="font-size: 3rem; margin-bottom: 10px">🧙‍♂️</div>
+          <h3>Mage</h3>
+          <p>Auto-fire magic orbs. Balanced.</p>
+          <button class="play-btn" onclick="startGame('mage')">Select</button>
+        </div>
+        <!-- Knight -->
+        <div class="char-card">
+          <div style="font-size: 3rem; margin-bottom: 10px">🛡️</div>
+          <h3>Knight</h3>
+          <p>High HP & melee swing attack.</p>
+          <button
+            class="price-btn"
+            id="btn-buy-knight"
+            onclick="buyChar('knight', 50)"
+          >
+            💰 50 ฿
+          </button>
+          <button
+            class="play-btn"
+            id="btn-play-knight"
+            style="display: none"
+            onclick="startGame('knight')"
+          >
+            Select
+          </button>
+        </div>
+        <!-- Ranger -->
+        <div class="char-card">
+          <div style="font-size: 3rem; margin-bottom: 10px">🏹</div>
+          <h3>Ranger</h3>
+          <p>Fast speed & rapid-fire arrows.</p>
+          <button
+            class="price-btn"
+            id="btn-buy-ranger"
+            onclick="buyChar('ranger', 100)"
+          >
+            💰 100 ฿
+          </button>
+          <button
+            class="play-btn"
+            id="btn-play-ranger"
+            style="display: none"
+            onclick="startGame('ranger')"
+          >
+            Select
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="home-btn"
+        style="
+          position: relative;
+          top: auto;
+          left: auto;
+          background: rgba(255, 255, 255, 0.2);
+        "
+        onclick="
+          toggleModal('charSelectScreen', false);
+          toggleModal('titleScreen', true);
+        "
+      >
+        ❌ Cancel
+      </button>
+    </div>
+
     <div id="gameContainer">
       <canvas id="gameCanvas"></canvas>
       <!-- Gameplay HUD -->
@@ -287,6 +442,18 @@
         <div class="hud-top">
           <div style="display: flex; gap: 15px; align-items: center">
             <div class="timer" id="timeText" style="min-width: 70px">00:00</div>
+            <div
+              style="
+                background: rgba(0, 0, 0, 0.5);
+                padding: 5px 10px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                font-weight: bold;
+                color: #fbc02d;
+              "
+            >
+              💰 <span id="hudBaht">0</span>
+            </div>
             <div
               style="
                 background: rgba(0, 0, 0, 0.5);
@@ -379,6 +546,13 @@
       let gameState = "title"; // title, playing, levelup, gameover
       let lastTime = 0;
       let gameTime = 0;
+
+      // Persistence
+      let totalBaht = parseInt(localStorage.getItem("pixelSurvivorBaht") || 0);
+      let ownedChars = JSON.parse(
+        localStorage.getItem("pixelSurvivorOwnedChars") || '["mage"]',
+      );
+      let bahtCoins = 0; // Run money
 
       // Virtual Camera
       let camera = { x: 0, y: 0 };
@@ -604,7 +778,7 @@
           // Obstacle collision
           obstacles.forEach((obs) => {
             const dx = this.x - obs.x;
-            const dy = this.y - (obs.y + obs.radius * 0.5); // Check against base
+            const dy = this.y - (obs.y + obs.radius * 0.5);
             const dist = Math.hypot(dx, dy);
             const minDist = this.radius + obs.radius * 0.6;
             if (dist < minDist && dist > 0) {
@@ -622,9 +796,55 @@
         }
 
         fireProjectile() {
-          if (enemies.length === 0) return;
+          // To be overridden by subclasses
+        }
 
-          // Find closest enemy
+        draw(ctx) {
+          // Shadow shared by all
+          ctx.fillStyle = "rgba(0,0,0,0.3)";
+          ctx.beginPath();
+          ctx.ellipse(
+            this.x,
+            this.y + this.radius,
+            this.radius,
+            this.radius / 2,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+
+        drawBaseHUD(ctx) {
+          // HP Bar (Above player)
+          const hpPct = Math.max(0, this.hp / this.maxHp);
+          ctx.fillStyle = "#f00";
+          ctx.fillRect(this.x - 15, this.y - 30, 30, 4);
+          ctx.fillStyle = "#0f0";
+          ctx.fillRect(this.x - 15, this.y - 30, 30 * hpPct, 4);
+
+          // Level Text
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 12px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("Lv." + this.level, this.x, this.y - 35);
+        }
+      }
+
+      // --- MAGE CLASS ---
+      class Mage extends Player {
+        constructor() {
+          super();
+          this.speed = 120;
+          this.maxHp = 100;
+          this.hp = 100;
+          this.attackDamage = 20;
+          this.attackCooldown = 0.6;
+          this.attackRange = 300;
+        }
+
+        fireProjectile() {
+          if (enemies.length === 0) return;
           let closest = null;
           let minD = Infinity;
           for (let e of enemies) {
@@ -647,32 +867,21 @@
               vy: (dirY / mag) * 400,
               radius: 6,
               damage: this.attackDamage,
-              life: 1.5, // seconds
+              life: 1.5,
+              color: "#00e5ff",
+              type: "orb",
             });
           }
         }
 
         draw(ctx) {
-          // Shadow
-          ctx.fillStyle = "rgba(0,0,0,0.3)";
-          ctx.beginPath();
-          ctx.ellipse(
-            this.x,
-            this.y + this.radius,
-            this.radius,
-            this.radius / 2,
-            0,
-            0,
-            Math.PI * 2,
-          );
-          ctx.fill();
-
+          super.draw(ctx);
           // Body (Robe)
           ctx.fillStyle = "#3f51b5"; // Indigo robe
           ctx.beginPath();
           ctx.arc(this.x, this.y + 4, 14, Math.PI, 0); // Shoulders
-          ctx.lineTo(this.x + 12, this.y + 16); // Right hem
-          ctx.lineTo(this.x - 12, this.y + 16); // Left hem
+          ctx.lineTo(this.x + 12, this.y + 16);
+          ctx.lineTo(this.x - 12, this.y + 16);
           ctx.closePath();
           ctx.fill();
 
@@ -691,7 +900,7 @@
           // Hair
           ctx.fillStyle = "#5d4037"; // Dark brown
           ctx.beginPath();
-          ctx.arc(this.x, this.y - 8, 12.5, Math.PI, 0); // Top hair
+          ctx.arc(this.x, this.y - 8, 12.5, Math.PI, 0);
           ctx.lineTo(this.x + 14, this.y);
           ctx.lineTo(this.x + 8, this.y - 4);
           ctx.lineTo(this.x - 8, this.y - 4);
@@ -715,7 +924,6 @@
           // Weapon (Magic Staff)
           ctx.fillStyle = "#795548"; // Wood
           ctx.fillRect(this.x + 10, this.y - 15, 4, 30);
-
           // Glowing Orb
           ctx.fillStyle = "#00e5ff"; // Cyan Gem
           ctx.shadowColor = "#00e5ff";
@@ -724,25 +932,251 @@
           ctx.arc(this.x + 12, this.y - 18, 6, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0; // Reset
-
           // Inner orb highlight
           ctx.fillStyle = "#fff";
           ctx.beginPath();
           ctx.arc(this.x + 10.5, this.y - 19.5, 2, 0, Math.PI * 2);
           ctx.fill();
 
-          // HP Bar (Above player)
-          const hpPct = Math.max(0, this.hp / this.maxHp);
-          ctx.fillStyle = "#f00";
-          ctx.fillRect(this.x - 15, this.y - 30, 30, 4);
-          ctx.fillStyle = "#0f0";
-          ctx.fillRect(this.x - 15, this.y - 30, 30 * hpPct, 4);
+          this.drawBaseHUD(ctx);
+        }
+      }
 
-          // Level Text
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 12px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText("Lv." + this.level, this.x, this.y - 35);
+      // --- KNIGHT CLASS ---
+      class Knight extends Player {
+        constructor() {
+          super();
+          this.speed = 100;
+          this.maxHp = 180;
+          this.hp = 180;
+          this.attackDamage = 35;
+          this.attackCooldown = 0.8;
+          this.attackRange = 120; // Short melee range
+          this.swingAngle = 0;
+          this.isSwinging = false;
+        }
+
+        fireProjectile() {
+          if (enemies.length === 0) return;
+          let closest = null;
+          let minD = Infinity;
+          for (let e of enemies) {
+            const d = Math.hypot(this.x - e.x, this.y - e.y);
+            if (d < minD && d < this.attackRange) {
+              minD = d;
+              closest = e;
+            }
+          }
+
+          if (closest) {
+            this.attackTimer = 0;
+            this.isSwinging = true;
+            this.swingAngle = Math.atan2(
+              closest.y - this.y,
+              closest.x - this.x,
+            );
+
+            // Melee splash: hit all enemies in a cone
+            enemies.forEach((e) => {
+              const d = Math.hypot(this.x - e.x, this.y - e.y);
+              if (d <= this.attackRange) {
+                const angleToEnemy = Math.atan2(e.y - this.y, e.x - this.x);
+                let angleDiff = angleToEnemy - this.swingAngle;
+                // Normalize angle to -PI to PI
+                angleDiff = Math.atan2(
+                  Math.sin(angleDiff),
+                  Math.cos(angleDiff),
+                );
+                if (Math.abs(angleDiff) < Math.PI / 3) {
+                  // 120 degree cone
+                  e.hp -= this.attackDamage;
+                  damageNumbers.push({
+                    x: e.x + (Math.random() - 0.5) * 20,
+                    y: e.y - 10,
+                    val: this.attackDamage,
+                    life: 0.8,
+                    vy: -30,
+                  });
+                  // Knockback
+                  e.x += Math.cos(angleToEnemy) * 20;
+                  e.y += Math.sin(angleToEnemy) * 20;
+                }
+              }
+            });
+            setTimeout(() => (this.isSwinging = false), 200);
+          }
+        }
+
+        draw(ctx) {
+          super.draw(ctx);
+
+          // Melee Swing Arc
+          if (this.isSwinging) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.arc(
+              this.x,
+              this.y,
+              this.attackRange,
+              this.swingAngle - Math.PI / 3,
+              this.swingAngle + Math.PI / 3,
+            );
+            ctx.fill();
+            // Sword visual swing
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(
+              this.x + Math.cos(this.swingAngle) * this.attackRange * 0.8,
+              this.y + Math.sin(this.swingAngle) * this.attackRange * 0.8,
+            );
+            ctx.stroke();
+          }
+
+          // Body (Armor)
+          ctx.fillStyle = "#9e9e9e"; // Steel armor
+          ctx.beginPath();
+          ctx.arc(this.x, this.y + 4, 15, Math.PI, 0);
+          ctx.lineTo(this.x + 13, this.y + 16);
+          ctx.lineTo(this.x - 13, this.y + 16);
+          ctx.closePath();
+          ctx.fill();
+
+          // Helmet
+          ctx.fillStyle = "#e0e0e0";
+          ctx.beginPath();
+          ctx.arc(this.x, this.y - 6, 13, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Visor slit
+          ctx.fillStyle = "#212121";
+          ctx.fillRect(this.x - 8, this.y - 8, 16, 4);
+
+          // Shield
+          if (!this.isSwinging) {
+            ctx.fillStyle = "#b71c1c"; // Red shield
+            ctx.beginPath();
+            ctx.arc(this.x - 12, this.y + 5, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#ffeb3b";
+            ctx.beginPath();
+            ctx.arc(this.x - 12, this.y + 5, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sword Rest
+            ctx.strokeStyle = "#e0e0e0";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(this.x + 12, this.y + 10);
+            ctx.lineTo(this.x + 15, this.y - 15);
+            ctx.stroke();
+          }
+
+          this.drawBaseHUD(ctx);
+        }
+      }
+
+      // --- RANGER CLASS ---
+      class Ranger extends Player {
+        constructor() {
+          super();
+          this.speed = 160;
+          this.maxHp = 80;
+          this.hp = 80;
+          this.attackDamage = 8;
+          this.attackCooldown = 0.25; // Very fast
+          this.attackRange = 400; // Long range
+        }
+
+        fireProjectile() {
+          if (enemies.length === 0) return;
+          let closest = null;
+          let minD = Infinity;
+          for (let e of enemies) {
+            const d = Math.hypot(this.x - e.x, this.y - e.y);
+            if (d < minD && d < this.attackRange) {
+              minD = d;
+              closest = e;
+            }
+          }
+
+          if (closest) {
+            this.attackTimer = 0;
+            const dirX = closest.x - this.x;
+            const dirY = closest.y - this.y;
+            const mag = Math.hypot(dirX, dirY);
+
+            // Arrow logic
+            projectiles.push({
+              x: this.x,
+              y: this.y,
+              vx: (dirX / mag) * 600, // Fast arrow
+              vy: (dirY / mag) * 600,
+              radius: 4,
+              damage: this.attackDamage,
+              life: 1.0,
+              color: "#e6ee9c", // Yellowish arrow
+              type: "arrow",
+              angle: Math.atan2(dirY, dirX),
+            });
+          }
+        }
+
+        draw(ctx) {
+          super.draw(ctx);
+          // Body (Tunic)
+          ctx.fillStyle = "#2e7d32"; // Green tunic
+          ctx.beginPath();
+          ctx.arc(this.x, this.y + 4, 13, Math.PI, 0);
+          ctx.lineTo(this.x + 11, this.y + 15);
+          ctx.lineTo(this.x - 11, this.y + 15);
+          ctx.closePath();
+          ctx.fill();
+
+          // Belt / Quiver strap
+          ctx.strokeStyle = "#5d4037";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(this.x - 10, this.y - 2);
+          ctx.lineTo(this.x + 10, this.y + 12);
+          ctx.stroke();
+
+          // Head (Skin)
+          ctx.fillStyle = "#ffccbc";
+          ctx.beginPath();
+          ctx.arc(this.x, this.y - 6, 11, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Hood
+          ctx.fillStyle = "#1b5e20"; // Dark green hood
+          ctx.beginPath();
+          ctx.arc(this.x, this.y - 8, 12, Math.PI * 1.1, Math.PI * -0.1);
+          ctx.fill();
+
+          // Eyes
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.arc(this.x - 4, this.y - 5, 2, 0, Math.PI * 2);
+          ctx.arc(this.x + 4, this.y - 5, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Bow
+          ctx.strokeStyle = "#8d6e63"; // Bow wood
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(this.x + 12, this.y + 2, 12, Math.PI * -0.3, Math.PI * 0.3);
+          ctx.stroke();
+          // Bow string
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(this.x + 19, this.y - 7);
+          ctx.lineTo(this.x + 19, this.y + 11);
+          ctx.stroke();
+
+          this.drawBaseHUD(ctx);
         }
       }
 
@@ -890,8 +1324,9 @@
               });
 
               if (e.hp <= 0) {
-                // Drop Gem or Special Item
-                if (Math.random() < 0.05) {
+                // Drop Coin, Gem or Special Item
+                const rand = Math.random();
+                if (rand < 0.05) {
                   // 5% chance for special item
                   const types = ["hp", "bomb", "magnet"];
                   items.push({
@@ -899,6 +1334,14 @@
                     y: e.y,
                     radius: 10,
                     type: types[Math.floor(Math.random() * types.length)],
+                  });
+                } else if (rand < 0.15) {
+                  // 10% chance for Baht Coin (0.05 to 0.15)
+                  items.push({
+                    x: e.x,
+                    y: e.y,
+                    radius: 10,
+                    type: "coin",
                   });
                 } else {
                   gems.push({
@@ -979,6 +1422,15 @@
               enemies = [];
             } else if (item.type === "magnet") {
               player.magnetTimer = 3; // Activate magnet for 3 seconds
+            } else if (item.type === "coin") {
+              bahtCoins++;
+              damageNumbers.push({
+                x: player.x,
+                y: player.y - 20,
+                val: "+1 ฿",
+                life: 1,
+                vy: -40,
+              });
             }
             items.splice(i, 1);
           }
@@ -1059,6 +1511,7 @@
           if (item.type === "hp") icon = "❤️";
           else if (item.type === "bomb") icon = "💣";
           else if (item.type === "magnet") icon = "🧲";
+          else if (item.type === "coin") icon = "💰";
 
           // Outer glow for visibility
           ctx.shadowColor = "#fff";
@@ -1072,13 +1525,36 @@
 
         // Draw Projectiles
         projectiles.forEach((p) => {
-          ctx.fillStyle = "#00e5ff"; // Cyan glow bullet
-          ctx.shadowColor = "#00e5ff";
-          ctx.shadowBlur = 10;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0; // reset
+          if (p.type === "arrow") {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            // Draw an arrow shape
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.moveTo(8, 0); // Tip
+            ctx.lineTo(-6, -4);
+            ctx.lineTo(-6, 4);
+            ctx.closePath();
+            ctx.fill();
+            // Arrow shaft
+            ctx.strokeStyle = "#8d6e63";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(8, 0);
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            // Default orb (Mage)
+            ctx.fillStyle = p.color || "#00e5ff";
+            ctx.shadowColor = p.color || "#00e5ff";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset
+          }
         });
 
         // Draw Player
@@ -1111,6 +1587,8 @@
 
         const optionsDiv = document.getElementById("upgradeOptions");
         optionsDiv.innerHTML = "";
+
+        // Give a bit of Baht logic if they have max level or want a refund option? (Optional, skipping for now)
 
         const upgrades = [
           {
@@ -1167,11 +1645,15 @@
           optionsDiv.appendChild(btn);
         });
       }
-
       function triggerGameOver() {
         document.getElementById("gameOverScreen").classList.add("active");
         document.getElementById("hud").style.display = "none";
         document.getElementById("joystick-zone").style.display = "none";
+
+        // Add run money to total money
+        totalBaht += bahtCoins;
+        localStorage.setItem("pixelSurvivorBaht", totalBaht);
+        document.getElementById("titleTotalBaht").innerText = totalBaht;
 
         const mins = Math.floor(gameTime / 60)
           .toString()
@@ -1183,6 +1665,116 @@
         document.getElementById("finalLevel").innerText = player.level;
 
         updateHighScores(Math.floor(gameTime), player.level);
+      }
+
+      function updateUI() {
+        document.getElementById("timeText").innerText =
+          Math.floor(gameTime / 60)
+            .toString()
+            .padStart(2, "0") +
+          ":" +
+          Math.floor(gameTime % 60)
+            .toString()
+            .padStart(2, "0");
+
+        document.getElementById("hpText").innerText =
+          Math.floor(player.hp) + "/" + player.maxHp;
+
+        document.getElementById("levelText").innerText = player.level;
+        document.getElementById("expBar").style.width =
+          (player.exp / player.expNeeded) * 100 + "%";
+
+        document.getElementById("hudBaht").innerText = bahtCoins;
+      }
+
+      function exitGame() {
+        // Save current coins
+        totalBaht += bahtCoins;
+        localStorage.setItem("pixelSurvivorBaht", totalBaht);
+        document.getElementById("titleTotalBaht").innerText = totalBaht;
+
+        gameState = "title";
+        document.getElementById("hud").style.display = "none";
+        document.getElementById("joystick-zone").style.display = "none";
+        document.getElementById("titleScreen").classList.add("active");
+        if (player) {
+          updateHighScores(Math.floor(gameTime), player.level);
+        }
+      }
+
+      function showCharSelect() {
+        document.getElementById("titleScreen").classList.remove("active");
+        document.getElementById("charSelectScreen").classList.add("active");
+
+        document.getElementById("charSelectBaht").innerText = totalBaht;
+
+        // Update buttons based on ownership
+        if (ownedChars.includes("knight")) {
+          document.getElementById("btn-buy-knight").style.display = "none";
+          document.getElementById("btn-play-knight").style.display = "block";
+        } else {
+          document.getElementById("btn-buy-knight").style.display = "block";
+          document.getElementById("btn-play-knight").style.display = "none";
+        }
+
+        if (ownedChars.includes("ranger")) {
+          document.getElementById("btn-buy-ranger").style.display = "none";
+          document.getElementById("btn-play-ranger").style.display = "block";
+        } else {
+          document.getElementById("btn-buy-ranger").style.display = "block";
+          document.getElementById("btn-play-ranger").style.display = "none";
+        }
+      }
+
+      function buyChar(charId, price) {
+        if (totalBaht >= price) {
+          totalBaht -= price;
+          ownedChars.push(charId);
+          localStorage.setItem("pixelSurvivorBaht", totalBaht);
+          localStorage.setItem(
+            "pixelSurvivorOwnedChars",
+            JSON.stringify(ownedChars),
+          );
+          document.getElementById("titleTotalBaht").innerText = totalBaht;
+          showCharSelect(); // Refresh UI
+        } else {
+          alert("Not enough Baht! 💰");
+        }
+      }
+
+      function startGame(charType = "mage") {
+        document.getElementById("charSelectScreen").classList.remove("active");
+        document.getElementById("gameOverScreen").classList.remove("active");
+        document.getElementById("titleScreen").classList.remove("active");
+
+        document.getElementById("hud").style.display = "flex";
+
+        if ("ontouchstart" in window) {
+          document.getElementById("joystick-zone").style.display = "block";
+        }
+
+        if (charType === "knight") player = new Knight();
+        else if (charType === "ranger") player = new Ranger();
+        else player = new Mage();
+
+        enemies = [];
+        gems = [];
+        items = [];
+        projectiles = [];
+        damageNumbers = [];
+        obstacles = [];
+        bahtCoins = 0; // Reset run multiplier
+        document.getElementById("hudBaht").innerText = "0";
+
+        // Generate random obstacles
+        for (let i = 0; i < 40; i++) {
+          obstacles.push(new Obstacle());
+        }
+
+        gameTime = 0;
+        gameState = "playing";
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
       }
 
       function updateHighScores(currentTime, currentLevel) {
@@ -1279,6 +1871,7 @@
       }
 
       // Init logic
+      document.getElementById("titleTotalBaht").innerText = totalBaht;
       updateHighScores(0, 1);
     </script>
   </body>
