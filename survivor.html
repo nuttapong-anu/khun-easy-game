@@ -157,16 +157,23 @@
 
       /* Virtual Joystick */
       #joystick-zone {
-        position: absolute;
+        position: fixed;
         bottom: 20px;
         left: 20px;
         width: 150px;
         height: 150px;
         background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
-        z-index: 80;
+        z-index: 200;
         display: none; /* Only show on touch / gameplay */
         pointer-events: auto;
+      }
+      @media (orientation: portrait) {
+        #joystick-zone {
+          left: 50%;
+          transform: translateX(-50%);
+          bottom: 10px;
+        }
       }
       #joystick-knob {
         position: absolute;
@@ -308,10 +315,10 @@
           </button>
         </div>
       </div>
+    </div>
 
-      <div id="joystick-zone">
-        <div id="joystick-knob"></div>
-      </div>
+    <div id="joystick-zone">
+      <div id="joystick-knob"></div>
     </div>
 
     <!-- Level Up Screen -->
@@ -911,14 +918,21 @@
           }
         }
 
+        // Update Player Magnet Timer
+        if (player.magnetTimer === undefined) player.magnetTimer = 0;
+        if (player.magnetTimer > 0) player.magnetTimer -= safeDt;
+
         // Player collecting gems
         for (let i = gems.length - 1; i >= 0; i--) {
           const g = gems[i];
           // Simple magnetic effect when close
           const dist = Math.hypot(player.x - g.x, player.y - g.y);
-          if (dist < 80) {
-            g.x += ((player.x - g.x) / dist) * 250 * safeDt;
-            g.y += ((player.y - g.y) / dist) * 250 * safeDt;
+          const pullDist = player.magnetTimer > 0 ? 240 : 80;
+          const pullSpeed = player.magnetTimer > 0 ? 600 : 250;
+
+          if (dist < pullDist && dist > 0) {
+            g.x += ((player.x - g.x) / dist) * pullSpeed * safeDt;
+            g.y += ((player.y - g.y) / dist) * pullSpeed * safeDt;
           }
           if (dist < player.radius + g.radius + 5) {
             player.exp += g.exp;
@@ -964,12 +978,7 @@
               });
               enemies = [];
             } else if (item.type === "magnet") {
-              // Pull all gems to player immediately
-              gems.forEach((g) => {
-                const gd = Math.hypot(player.x - g.x, player.y - g.y);
-                g.x += ((player.x - g.x) / gd) * 1000 * safeDt;
-                g.y += ((player.y - g.y) / gd) * 1000 * safeDt;
-              });
+              player.magnetTimer = 3; // Activate magnet for 3 seconds
             }
             items.splice(i, 1);
           }
