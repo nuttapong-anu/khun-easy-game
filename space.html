@@ -148,26 +148,25 @@
         gap: 4px;
       }
       .exit-btn {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1.5px solid rgba(255, 255, 255, 0.2);
-        color: rgba(255, 255, 255, 0.6);
+        padding: 4px 12px;
         font-size: 0.9rem;
+        background: linear-gradient(180deg, #f44336, #d32f2f);
+        color: white;
+        border: none;
+        border-radius: 20px;
         cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(244, 67, 54, 0.4);
+        font-family: inherit;
+        font-weight: bold;
+        pointer-events: auto;
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: all 0.2s;
-        pointer-events: auto;
-        padding: 0;
-        line-height: 1;
       }
       .exit-btn:hover {
-        background: rgba(255, 82, 82, 0.3);
-        border-color: #ff5252;
-        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(244, 67, 54, 0.5);
       }
       .highscore-box {
         margin-top: 20px;
@@ -400,6 +399,24 @@
         background: rgba(255, 255, 255, 0.2);
         border-color: #fff;
       }
+      .global-khuno-display {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(251, 192, 45, 0.5);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: bold;
+        color: #fbc02d;
+        z-index: 200;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-shadow: 1px 1px 3px black;
+      }
     </style>
   </head>
   <body>
@@ -407,6 +424,9 @@
       <a href="index.html" class="home-btn" onclick="event.stopPropagation()"
         >🏠 Home</a
       >
+      <div class="global-khuno-display">
+        💰 Khuno: <span id="khunoBalTitle">0</span> K
+      </div>
       <h1>🚀 COSMIC DEFENDERS</h1>
       <h2>SPACE SHOOTING ADVENTURE</h2>
       <button class="start-btn" onclick="startGame()">▶ START GAME</button>
@@ -448,6 +468,9 @@
         <h3>⚔️ การต่อสู้</h3>
         <p>
           ทำลายศัตรูเป็นระลอก แต่ละด่านมีบอสสุดโหดรออยู่ อย่าให้หัวใจ ❤️ หมด!
+          <br />
+          (ศัตรูและอุกกาบาตมีโอกาส 5% ที่จะดรอปเหรียญ
+          <strong>💰 KHUNO</strong> สะสมเพื่อใช้ปลดล็อคตัวละครหน้าพอร์ทัลหลัก)
         </p>
         <p>
           🚪 สามารถกดปุ่ม
@@ -477,13 +500,18 @@
     <div id="hud">
       <div class="hud-row">
         <div class="hp-display" id="hpDisplay"></div>
-        <div class="score-box">⭐ <span id="scoreText">0</span></div>
+        <div style="display: flex; gap: 8px">
+          <div class="score-box">💰 <span id="khunoSessionText">0</span> K</div>
+          <div class="score-box">⭐ <span id="scoreText">0</span></div>
+        </div>
       </div>
       <div class="hud-row" style="margin-top: 4px">
         <div class="weapon-box" id="weaponDisplay">🔫 Basic</div>
         <div style="display: flex; align-items: center; gap: 6px">
           <div class="stage-box" id="stageText">Stage 1</div>
-          <button class="exit-btn" id="exitBtn" onclick="exitGame()">✕</button>
+          <button class="exit-btn" id="exitBtn" onclick="exitGame()">
+            🚪 Exit
+          </button>
         </div>
       </div>
     </div>
@@ -654,6 +682,8 @@
       ];
 
       // ── GAME STATE ──
+      let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
+      let sessionKhuno = 0;
       let G = {
         state: "title",
         score: 0,
@@ -2219,6 +2249,7 @@
           X.scale(p, p);
           X.shadowBlur = 10;
           let em = {
+            khuno: "💰",
             star: "⭐",
             crystal: "💎",
             heart: "❤️",
@@ -2226,6 +2257,7 @@
             shield: "🛡️",
           };
           let sc = {
+            khuno: "#fbc02d",
             star: "#ffd700",
             crystal: "#e040fb",
             heart: "#ff1744",
@@ -2250,14 +2282,19 @@
       }
       function dropItem(x, y) {
         let r = Math.random();
-        if (r < 0.3) items.push(new Item("star", x, y));
-        else if (r < 0.4) items.push(new Item("crystal", x, y));
-        else if (r < 0.5) items.push(new Item("weapon", x, y));
-        else if (r < 0.57) items.push(new Item("heart", x, y));
-        else if (r < 0.62) items.push(new Item("shield", x, y));
+        if (r < 0.05) items.push(new Item("khuno", x, y));
+        else if (r < 0.35) items.push(new Item("star", x, y));
+        else if (r < 0.45) items.push(new Item("crystal", x, y));
+        else if (r < 0.55) items.push(new Item("weapon", x, y));
+        else if (r < 0.62) items.push(new Item("heart", x, y));
+        else if (r < 0.67) items.push(new Item("shield", x, y));
       }
       function collectItem(it) {
-        if (it.type === "star") {
+        if (it.type === "khuno") {
+          sessionKhuno++;
+          updateKhunoSession();
+          sparkle(it.x, it.y, "#fbc02d");
+        } else if (it.type === "star") {
           G.score += 100;
           sparkle(it.x, it.y, "#ffd700");
         } else if (it.type === "crystal") {
@@ -2306,6 +2343,10 @@
       }
       function updateScore() {
         document.getElementById("scoreText").textContent = G.score;
+      }
+      function updateKhunoSession() {
+        const el = document.getElementById("khunoSessionText");
+        if (el) el.textContent = sessionKhuno;
       }
 
       // ── WAVE SPAWNING ──
@@ -2381,6 +2422,8 @@
         particles = [];
         shockwaves = [];
         boss = null;
+        sessionKhuno = 0;
+        updateKhunoSession();
         updateHP();
         updateWeapon();
         updateScore();
@@ -2391,6 +2434,11 @@
       }
 
       function exitGame() {
+        globalKhuno += sessionKhuno;
+        sessionKhuno = 0;
+        localStorage.setItem("khunoCoins", globalKhuno);
+        document.getElementById("khunoBalTitle").textContent = globalKhuno;
+
         G.state = "title";
         saveHighScore();
         window.location.href = "index.html";
@@ -2407,7 +2455,12 @@
             "You saved the cosmos!",
             "Final Score: " +
               G.score +
-              (G.score >= highScore ? " 🏆 NEW RECORD!" : ""),
+              (G.score >= highScore ? " 🏆 NEW RECORD!" : "") +
+              (sessionKhuno > 0
+                ? "<br><span style='color:#fbc02d'>+" +
+                  sessionKhuno +
+                  " 💰 KHUNO</span>"
+                : ""),
             "🏠 Title",
             "#76ff03",
           );
@@ -2448,7 +2501,14 @@
           () =>
             showOverlay(
               "💥 GAME OVER 💥",
-              "Score: " + G.score + hiMsg,
+              "Score: " +
+                G.score +
+                hiMsg +
+                (sessionKhuno > 0
+                  ? "<br><span style='color:#fbc02d'>+" +
+                    sessionKhuno +
+                    " 💰 KHUNO</span>"
+                  : ""),
               "Stage " + (G.stage + 1) + " — " + STAGES[G.stage].name,
               "🔄 Try Again",
               "#ff5252",
@@ -2463,7 +2523,7 @@
         document.getElementById("olTitle").style.color = color;
         document.getElementById("olSub").textContent = sub;
         document.getElementById("olSub").style.color = "#fff";
-        document.getElementById("olInfo").textContent = info;
+        document.getElementById("olInfo").innerHTML = info;
         document.getElementById("olBtn").textContent = btn;
       }
 
@@ -2482,6 +2542,11 @@
             "Stage " + (G.stage + 1) + " — " + STAGES[G.stage].name;
           requestAnimationFrame(loop);
         } else {
+          globalKhuno += sessionKhuno;
+          sessionKhuno = 0;
+          localStorage.setItem("khunoCoins", globalKhuno);
+          document.getElementById("khunoBalTitle").textContent = globalKhuno;
+
           document.getElementById("hud").style.display = "none";
           document.getElementById("touchControls").style.display = "none";
           document.getElementById("titleScreen").style.display = "flex";
@@ -2693,6 +2758,9 @@
         touchU = false;
         touchD = false;
       });
+
+      // Init display on load
+      document.getElementById("khunoBalTitle").textContent = globalKhuno;
     </script>
   </body>
 </html>

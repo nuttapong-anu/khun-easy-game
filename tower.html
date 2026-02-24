@@ -205,6 +205,24 @@
         transform: scale(1.05);
         background: rgba(255, 255, 255, 0.2);
       }
+      .global-khuno-display {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(251, 192, 45, 0.5);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: bold;
+        color: #fbc02d;
+        z-index: 200;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-shadow: 1px 1px 3px black;
+      }
       .baht-display {
         margin-top: 20px;
         padding: 10px 25px;
@@ -566,10 +584,12 @@
     <!-- Title Screen -->
     <div id="titleScreen" class="screen active">
       <a href="index.html" class="home-btn">🏠 Home</a>
+      <div class="global-khuno-display">
+        💰 Khuno: <span id="khunoBalTitle">0</span> K
+      </div>
       <h1>⚔️ TOWER DEFENSE</h1>
       <h2>SIMULATOR</h2>
       <button class="btn-main" onclick="showShop()">▶ START</button>
-      <div class="baht-display" id="titleBaht">💰 0 Baht</div>
       <div
         class="baht-display"
         style="
@@ -600,12 +620,17 @@
         <h3>💰 ระบบเงินตรา</h3>
         <ul>
           <li>
-            <strong>บาท (฿)</strong>: ได้จากการผ่านด่าน
-            ใช้ซื้อตัวป้องกันใหม่ในร้านค้า
+            <strong>KHUNO (K)</strong>:
+            ได้จากการผ่านด่านหรือสุ่มดรอปจากมอนสเตอร์
+            ใช้ซื้อตัวป้องกันใหม่ในร้านค้า แลกเปลี่ยนใช้ร่วมกันทั้งหน้าแรก
           </li>
           <li>
             <strong>เหรียญ (🪙)</strong>: ได้จากการสังหารมอนสเตอร์
             ใช้วางตัวป้องกันลงสนาม
+          </li>
+          <li>
+            <strong>KHUNO (K)</strong>: สุ่มดรอปจากมอนสเตอร์ (5%)
+            สะสมเข้ากระเป๋ากลาง
           </li>
         </ul>
 
@@ -640,9 +665,11 @@
     <!-- Shop Screen -->
     <div id="shopScreen" class="screen">
       <a href="index.html" class="home-btn">🏠 Home</a>
+      <div class="global-khuno-display">
+        💰 Khuno: <span id="khunoBalShop">0</span> K
+      </div>
       <div class="shop-header">
         <h2>🛒 SHOP</h2>
-        <div class="baht-display" id="shopBaht">💰 0 Baht</div>
       </div>
       <div class="section-title">⚔️ Characters</div>
       <div class="shop-grid" id="shopChars"></div>
@@ -678,7 +705,7 @@
     <div id="resultOverlay" class="overlay">
       <h2 id="resultTitle">🎉 VICTORY!</h2>
       <div class="sub" id="resultSub">Stage Complete</div>
-      <div class="info" id="resultInfo">+100 Baht</div>
+      <div class="info" id="resultInfo">+10 KHUNO</div>
       <button class="btn-main" onclick="backToShop()">🛒 Back to Shop</button>
     </div>
     <div id="waveAnnounce"></div>
@@ -836,7 +863,7 @@
           id: "soldier",
           name: "Soldier",
           icon: "🗡️",
-          bahtCost: 0,
+          khunoCost: 0,
           coinCost: 15,
           dmg: 5,
           atkSpeed: 1.0,
@@ -847,7 +874,7 @@
           id: "archer",
           name: "Archer",
           icon: "🏹",
-          bahtCost: 50,
+          khunoCost: 25,
           coinCost: 25,
           dmg: 8,
           atkSpeed: 1.2,
@@ -858,7 +885,7 @@
           id: "mage",
           name: "Mage",
           icon: "🔮",
-          bahtCost: 120,
+          khunoCost: 40,
           coinCost: 40,
           dmg: 15,
           atkSpeed: 2.0,
@@ -869,7 +896,7 @@
           id: "cannon",
           name: "Cannon",
           icon: "💣",
-          bahtCost: 200,
+          khunoCost: 60,
           coinCost: 60,
           dmg: 25,
           atkSpeed: 3.0,
@@ -880,7 +907,7 @@
           id: "knight",
           name: "Knight",
           icon: "🛡️",
-          bahtCost: 300,
+          khunoCost: 50,
           coinCost: 50,
           dmg: 12,
           atkSpeed: 1.5,
@@ -891,7 +918,7 @@
           id: "wizard",
           name: "Wizard",
           icon: "⚡",
-          bahtCost: 500,
+          khunoCost: 80,
           coinCost: 80,
           dmg: 35,
           atkSpeed: 2.5,
@@ -902,7 +929,7 @@
           id: "superseiya",
           name: "SuperSeiya",
           icon: "💥",
-          bahtCost: 1100,
+          khunoCost: 150,
           coinCost: 150,
           dmg: 150,
           atkSpeed: 1,
@@ -913,7 +940,7 @@
           id: "chrono",
           name: "Chrono",
           icon: "⏰",
-          bahtCost: 500,
+          khunoCost: 200,
           coinCost: 200,
           dmg: 0,
           atkSpeed: 0,
@@ -1006,8 +1033,9 @@
       const ctx = canvas.getContext("2d");
 
       // ── STATE ──
-      let baht = 0,
-        owned = ["soldier"];
+      let sessionKhuno = 0;
+      let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
+      let owned = ["soldier"];
       let coins = 100,
         baseHP = 100,
         maxBaseHP = 100;
@@ -1032,12 +1060,10 @@
 
       // ── PERSISTENCE ──
       function save() {
-        localStorage.setItem("td_baht", baht);
         localStorage.setItem("td_owned", JSON.stringify(owned));
         localStorage.setItem("td_bestWave", bestWave);
       }
       function load() {
-        baht = parseInt(localStorage.getItem("td_baht") || "0");
         try {
           owned = JSON.parse(localStorage.getItem("td_owned")) || ["soldier"];
         } catch (e) {
@@ -1071,52 +1097,58 @@
         g.innerHTML = "";
         CHARS.forEach((ch) => {
           const o = owned.includes(ch.id);
-          const afford = baht >= ch.bahtCost;
+          const afford = globalKhuno >= ch.khunoCost;
           g.innerHTML += `<div class="shop-card ${o ? "owned" : ""}">
-      <div class="shop-icon">${ch.icon}</div>
-      <div class="shop-name">${ch.name}</div>
-      <div class="shop-stats">DMG ${ch.dmg} · SPD ${ch.atkSpeed}s · RNG ${ch.range}<br>Summon: 🪙${ch.coinCost}</div>
-      ${o ? '<div class="shop-badge">✓ OWNED</div>' : `<button class="shop-buy" ${!afford ? "disabled" : ""} onclick="buyChar('${ch.id}')">${ch.bahtCost === 0 ? "FREE" : "฿" + ch.bahtCost}</button>`}
-    </div>`;
+        <div class="shop-icon">${ch.icon}</div>
+        <div class="shop-name">${ch.name}</div>
+        <div class="shop-stats">DMG ${ch.dmg} · SPD ${ch.atkSpeed}s · RNG ${ch.range}<br>Summon: ${ch.coinCost}</div>
+        ${o ? '<div class="shop-badge">✓ OWNED</div>' : `<button class="shop-buy" ${!afford ? "disabled" : ""} onclick="buyChar('${ch.id}')">${ch.khunoCost === 0 ? "FREE" : ch.khunoCost + " K"}</button>`}
+      </div>`;
         });
         // Potions
         const p = document.getElementById("shopPotions");
         p.innerHTML = `
-    <div class="potion-card ${dmgPotion ? "active" : ""}">
-      <div class="shop-icon">🗡️</div>
-      <div class="shop-name">Damage x2</div>
-      <div class="shop-stats">All defenders deal double damage</div>
-      ${dmgPotion ? '<div class="shop-badge">ACTIVE ✓</div>' : `<button class="shop-buy" ${baht < 80 ? "disabled" : ""} onclick="buyPotion('dmg')">฿80</button>`}
-    </div>
-    <div class="potion-card ${hpPotion ? "active" : ""}">
-      <div class="shop-icon">❤️</div>
-      <div class="shop-name">Base HP +100</div>
-      <div class="shop-stats">Base starts with 200 HP</div>
-      ${hpPotion ? '<div class="shop-badge">ACTIVE ✓</div>' : `<button class="shop-buy" ${baht < 60 ? "disabled" : ""} onclick="buyPotion('hp')">฿60</button>`}
-    </div>`;
-        document.getElementById("shopBaht").textContent =
-          "💰 " + baht + " Baht";
-        document.getElementById("titleBaht").textContent =
-          "💰 " + baht + " Baht";
+      <div class="potion-card ${dmgPotion ? "active" : ""}">
+        <div class="shop-icon">🗡️</div>
+        <div class="shop-name">Damage x2</div>
+        <div class="shop-stats">All defenders deal double damage</div>
+        ${dmgPotion ? '<div class="shop-badge">ACTIVE ✓</div>' : `<button class="shop-buy" ${globalKhuno < 10 ? "disabled" : ""} onclick="buyPotion('dmg')">10 K</button>`}
+      </div>
+      <div class="potion-card ${hpPotion ? "active" : ""}">
+        <div class="shop-icon">❤️</div>
+        <div class="shop-name">Base HP +100</div>
+        <div class="shop-stats">Base starts with 200 HP</div>
+        ${hpPotion ? '<div class="shop-badge">ACTIVE ✓</div>' : `<button class="shop-buy" ${globalKhuno < 5 ? "disabled" : ""} onclick="buyPotion('hp')">5 K</button>`}
+      </div>`;
+        updateKhunoDisplays();
         renderMaps();
+      }
+      function updateKhunoDisplays() {
+        const title = document.getElementById("khunoBalTitle");
+        const shop = document.getElementById("khunoBalShop");
+        if (title) title.textContent = globalKhuno;
+        if (shop) shop.textContent = globalKhuno;
       }
       function buyChar(id) {
         const ch = CHARS.find((c) => c.id === id);
-        if (!ch || owned.includes(id) || baht < ch.bahtCost) return;
-        baht -= ch.bahtCost;
+        if (!ch || owned.includes(id) || globalKhuno < ch.khunoCost) return;
+        globalKhuno -= ch.khunoCost;
+        localStorage.setItem("khunoCoins", globalKhuno);
         owned.push(id);
         save();
         renderShop();
       }
       function buyPotion(type) {
-        if (type === "dmg" && baht >= 80) {
-          baht -= 80;
+        if (type === "dmg" && globalKhuno >= 10 && !dmgPotion) {
+          globalKhuno -= 10;
+          localStorage.setItem("khunoCoins", globalKhuno);
           dmgPotion = true;
           save();
           renderShop();
         }
-        if (type === "hp" && baht >= 60) {
-          baht -= 60;
+        if (type === "hp" && globalKhuno >= 5 && !hpPotion) {
+          globalKhuno -= 5;
+          localStorage.setItem("khunoCoins", globalKhuno);
           hpPotion = true;
           save();
           renderShop();
@@ -1128,6 +1160,7 @@
         showScreen(null);
         document.getElementById("battleHud").style.display = "block";
         document.getElementById("charPanel").style.display = "block";
+        sessionKhuno = 0;
         coins = 100;
         maxBaseHP = hpPotion ? 200 : 100;
         baseHP = maxBaseHP;
@@ -1400,6 +1433,17 @@
             if (p.target.hp <= 0) {
               p.target.dead = true;
               coins += p.target.reward;
+              if (Math.random() < 0.05) {
+                // 5% chance dropping Khuno Coin
+                sessionKhuno++;
+                dmgTexts.push({
+                  x: p.target.x,
+                  y: p.target.y - CS * 0.8,
+                  txt: "+1 K",
+                  life: 0.8,
+                  color: "#fbc02d",
+                });
+              }
               updateHud();
               renderCharPanel();
               for (let i = 0; i < 8; i++)
@@ -1740,8 +1784,13 @@
       // ── END GAME ──
       function endGame(win) {
         gameState = win ? "stage_clear" : "game_over";
-        const earned = win ? 500 : Math.max(0, wave * 5);
-        baht += earned;
+        const earned = win ? 10 : Math.max(0, Math.floor(wave * 0.15));
+
+        sessionKhuno += earned;
+        globalKhuno += sessionKhuno;
+        localStorage.setItem("khunoCoins", globalKhuno);
+        updateKhunoDisplays();
+
         save();
         dmgPotion = false;
         hpPotion = false;
@@ -1755,8 +1804,8 @@
           document.getElementById("resultSub").textContent = win
             ? "All 50 Waves Cleared!"
             : "Defeated at Wave " + wave + "/" + TOTAL_WAVES;
-          document.getElementById("resultInfo").textContent =
-            "+" + earned + " Baht earned";
+          document.getElementById("resultInfo").innerHTML =
+            "+" + sessionKhuno + " 💰 KHUNO earned";
           document.getElementById("resultOverlay").classList.add("active");
         }, 500);
       }
@@ -1789,7 +1838,8 @@
 
       // ── INIT ──
       load();
-      document.getElementById("titleBaht").textContent = "💰 " + baht + " Baht";
+      globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
+      updateKhunoDisplays();
       document.getElementById("titleBest").textContent =
         "🏆 Best Wave: " + bestWave;
       resize();

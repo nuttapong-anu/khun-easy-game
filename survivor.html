@@ -256,15 +256,21 @@
         <span id="titleBestLevel">1</span>
       </div>
       <div
+        class="global-khuno-display"
         style="
-          font-size: 1.5rem;
+          position: absolute;
+          top: 15px;
+          right: 15px;
           color: #fbc02d;
-          margin-bottom: 20px;
           font-weight: bold;
-          text-shadow: 1px 1px 2px #000;
+          font-size: 1.2rem;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 5px 15px;
+          border-radius: 20px;
+          z-index: 100;
         "
       >
-        💰 <span id="titleTotalBaht">0</span> ฿
+        💰 Khuno: <span id="titleTotalKhuno">0</span> K
       </div>
       <button class="btn-main" onclick="showCharSelect()">▶ Play</button>
       <button
@@ -309,8 +315,8 @@
             <strong>เก็บคริสตัลสีฟ้า (EXP)</strong> เพื่อเพิ่มเลเวล
           </li>
           <li>
-            💰 <strong>เหรียญบาท (Baht)</strong>:
-            มอนสเตอร์มีโอกาสดรอปเหรียญเงินเพื่อนำมาสะสม
+            💰 <strong>Khuno (K)</strong>:
+            มอนสเตอร์มีโอกาสดรอปเหรียญประจำตัวเกมเพื่อนำมาสะสม
             สำหรับใช้ปลดล็อคตัวละครใหม่ (Knight, Ranger) ที่หน้าแรก
           </li>
           <li>
@@ -346,11 +352,31 @@
 
     <!-- Character Select Screen -->
     <div id="charSelectScreen" class="screen">
+      <a
+        href="index.html"
+        class="home-btn"
+        style="position: absolute; top: 15px; left: 15px"
+        >🏠 Home</a
+      >
       <h2 style="font-size: 2.5rem; color: #ffab40; margin-bottom: 5px">
         Select Hero
       </h2>
-      <div style="font-size: 1.2rem; margin-bottom: 20px; color: #fbc02d">
-        💰 <span id="charSelectBaht">0</span> ฿
+      <div
+        class="global-khuno-display"
+        style="
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          color: #fbc02d;
+          font-weight: bold;
+          font-size: 1.2rem;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 5px 15px;
+          border-radius: 20px;
+          z-index: 100;
+        "
+      >
+        💰 Khuno: <span id="charSelectKhuno">0</span> K
       </div>
 
       <div
@@ -378,9 +404,9 @@
           <button
             class="price-btn"
             id="btn-buy-knight"
-            onclick="buyChar('knight', 50)"
+            onclick="buyChar('knight', 25)"
           >
-            💰 50 ฿
+            💰 25 K
           </button>
           <button
             class="play-btn"
@@ -399,9 +425,9 @@
           <button
             class="price-btn"
             id="btn-buy-ranger"
-            onclick="buyChar('ranger', 100)"
+            onclick="buyChar('ranger', 40)"
           >
-            💰 100 ฿
+            💰 40 K
           </button>
           <button
             class="play-btn"
@@ -452,7 +478,7 @@
                 color: #fbc02d;
               "
             >
-              💰 <span id="hudBaht">0</span>
+              💰 <span id="hudKhuno">0</span>
             </div>
             <div
               style="
@@ -548,11 +574,11 @@
       let gameTime = 0;
 
       // Persistence
-      let totalBaht = parseInt(localStorage.getItem("pixelSurvivorBaht") || 0);
+      let globalKhuno = parseInt(localStorage.getItem("khunoCoins") || 0);
       let ownedChars = JSON.parse(
         localStorage.getItem("pixelSurvivorOwnedChars") || '["mage"]',
       );
-      let bahtCoins = 0; // Run money
+      let khunoSessionCoins = 0; // Run money
 
       // Virtual Camera
       let camera = { x: 0, y: 0 };
@@ -1335,8 +1361,8 @@
                     radius: 10,
                     type: types[Math.floor(Math.random() * types.length)],
                   });
-                } else if (rand < 0.15) {
-                  // 10% chance for Baht Coin (0.05 to 0.15)
+                } else if (rand < 0.1) {
+                  // 5% chance for Baht Coin (0.05 to 0.10)
                   items.push({
                     x: e.x,
                     y: e.y,
@@ -1423,11 +1449,11 @@
             } else if (item.type === "magnet") {
               player.magnetTimer = 3; // Activate magnet for 3 seconds
             } else if (item.type === "coin") {
-              bahtCoins++;
+              khunoSessionCoins++;
               damageNumbers.push({
                 x: player.x,
                 y: player.y - 20,
-                val: "+1 ฿",
+                val: "+1 K",
                 life: 1,
                 vy: -40,
               });
@@ -1651,9 +1677,9 @@
         document.getElementById("joystick-zone").style.display = "none";
 
         // Add run money to total money
-        totalBaht += bahtCoins;
-        localStorage.setItem("pixelSurvivorBaht", totalBaht);
-        document.getElementById("titleTotalBaht").innerText = totalBaht;
+        globalKhuno += khunoSessionCoins;
+        localStorage.setItem("khunoCoins", globalKhuno);
+        document.getElementById("titleTotalKhuno").innerText = globalKhuno;
 
         const mins = Math.floor(gameTime / 60)
           .toString()
@@ -1684,14 +1710,14 @@
         document.getElementById("expBar").style.width =
           (player.exp / player.expNeeded) * 100 + "%";
 
-        document.getElementById("hudBaht").innerText = bahtCoins;
+        document.getElementById("hudKhuno").innerText = khunoSessionCoins;
       }
 
       function exitGame() {
         // Save current coins
-        totalBaht += bahtCoins;
-        localStorage.setItem("pixelSurvivorBaht", totalBaht);
-        document.getElementById("titleTotalBaht").innerText = totalBaht;
+        globalKhuno += khunoSessionCoins;
+        localStorage.setItem("khunoCoins", globalKhuno);
+        document.getElementById("titleTotalKhuno").innerText = globalKhuno;
 
         gameState = "title";
         document.getElementById("hud").style.display = "none";
@@ -1706,7 +1732,7 @@
         document.getElementById("titleScreen").classList.remove("active");
         document.getElementById("charSelectScreen").classList.add("active");
 
-        document.getElementById("charSelectBaht").innerText = totalBaht;
+        document.getElementById("charSelectKhuno").innerText = globalKhuno;
 
         // Update buttons based on ownership
         if (ownedChars.includes("knight")) {
@@ -1727,18 +1753,18 @@
       }
 
       function buyChar(charId, price) {
-        if (totalBaht >= price) {
-          totalBaht -= price;
+        if (globalKhuno >= price) {
+          globalKhuno -= price;
           ownedChars.push(charId);
-          localStorage.setItem("pixelSurvivorBaht", totalBaht);
+          localStorage.setItem("khunoCoins", globalKhuno);
           localStorage.setItem(
             "pixelSurvivorOwnedChars",
             JSON.stringify(ownedChars),
           );
-          document.getElementById("titleTotalBaht").innerText = totalBaht;
+          document.getElementById("titleTotalKhuno").innerText = globalKhuno;
           showCharSelect(); // Refresh UI
         } else {
-          alert("Not enough Baht! 💰");
+          alert("Not enough Khuno! 💰");
         }
       }
 
@@ -1763,8 +1789,8 @@
         projectiles = [];
         damageNumbers = [];
         obstacles = [];
-        bahtCoins = 0; // Reset run multiplier
-        document.getElementById("hudBaht").innerText = "0";
+        khunoSessionCoins = 0; // Reset run multiplier
+        document.getElementById("hudKhuno").innerText = "0";
 
         // Generate random obstacles
         for (let i = 0; i < 40; i++) {

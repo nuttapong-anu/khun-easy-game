@@ -117,6 +117,24 @@
         transform: scale(1.05);
         background: rgba(255, 255, 255, 0.2);
       }
+      .global-khuno-display {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(251, 192, 45, 0.5);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: bold;
+        color: #fbc02d;
+        z-index: 200;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-shadow: 1px 1px 3px black;
+      }
       .coin-display {
         margin-top: 20px;
         padding: 10px 25px;
@@ -435,6 +453,8 @@
         line-height: 1.6;
         color: #ccc;
         margin-bottom: 8px;
+        font-family: inherit;
+        transition: all 0.2s;
       }
       .modal-content ul {
         padding-left: 20px;
@@ -462,7 +482,23 @@
       <h1>🏁 ROAD RAGE</h1>
       <h2>RACING</h2>
       <button class="btn-main" onclick="showGarage()">▶ START</button>
-      <div class="coin-display" id="titleCoins">🪙 0</div>
+      <div
+        class="global-khuno-display"
+        style="
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          color: #fbc02d;
+          font-weight: bold;
+          font-size: 1.2rem;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 5px 15px;
+          border-radius: 20px;
+          z-index: 100;
+        "
+      >
+        💰 Khuno: <span id="titleCoins">0</span> K
+      </div>
       <button class="btn-info" onclick="toggleModal('howToModal', true)">
         ❓ วิธีเล่น
       </button>
@@ -491,7 +527,8 @@
         <h3>🚗 กฎการแข่ง</h3>
         <p>
           แข่งกับ AI 4 คัน ใน 5 เลน ไปให้ถึงเส้นชัย (12 กม.) ให้เร็วที่สุด!
-          อันดับยิ่งดี 🪙 รางวัลยิ่งเยอะ!
+          อันดับยิ่งดีได้รับ
+          <strong>KHUNO (K)</strong> สะสมเข้ากระเป๋ากลางยิ่งเยอะ!
         </p>
         <p>
           ⚠️ <strong>ระวังอุปสรรคข้างทาง!</strong> หากขับชนต้นไม้, หิน
@@ -524,9 +561,25 @@
     </div>
     <div id="garageScreen" class="screen">
       <a href="index.html" class="home-btn">🏠 Home</a>
+      <div
+        class="global-khuno-display"
+        style="
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          color: #fbc02d;
+          font-weight: bold;
+          font-size: 1.2rem;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 5px 15px;
+          border-radius: 20px;
+          z-index: 100;
+        "
+      >
+        💰 Khuno: <span id="garageCoins">0</span> K
+      </div>
       <div class="shop-header">
         <h2>🔧 GARAGE</h2>
-        <div class="coin-display" id="garageCoins">🪙 0</div>
       </div>
       <div class="shop-grid" id="carGrid"></div>
       <div
@@ -651,7 +704,7 @@
           id: "blaze",
           name: "Blaze",
           icon: "🏎️",
-          cost: 120,
+          cost: 12,
           maxSpeed: 240,
           accel: 40,
           hp: 70,
@@ -664,7 +717,7 @@
           id: "titan",
           name: "Titan",
           icon: "🚛",
-          cost: 250,
+          cost: 25,
           maxSpeed: 165,
           accel: 22,
           hp: 200,
@@ -677,7 +730,7 @@
           id: "storm",
           name: "Storm",
           icon: "⚡",
-          cost: 400,
+          cost: 40,
           maxSpeed: 260,
           accel: 50,
           hp: 60,
@@ -690,7 +743,7 @@
           id: "shadow",
           name: "Shadow",
           icon: "🌑",
-          cost: 600,
+          cost: 60,
           maxSpeed: 220,
           accel: 35,
           hp: 90,
@@ -703,7 +756,7 @@
           id: "fury",
           name: "Fury",
           icon: "💀",
-          cost: 900,
+          cost: 90,
           maxSpeed: 240,
           accel: 38,
           hp: 150,
@@ -777,13 +830,12 @@
 
       // ── PERSISTENCE ──
       function save() {
-        localStorage.setItem("rr_coins", coins);
         localStorage.setItem("rr_owned", JSON.stringify(ownedCars));
         localStorage.setItem("rr_selected", selectedCar);
         localStorage.setItem("rr_track", currentTrack);
       }
       function load() {
-        coins = parseInt(localStorage.getItem("rr_coins") || "0");
+        khunoCoins = parseInt(localStorage.getItem("khunoCoins") || "0");
         try {
           ownedCars = JSON.parse(localStorage.getItem("rr_owned")) || [
             "runner",
@@ -821,21 +873,21 @@
         CARS.forEach((car) => {
           const own = ownedCars.includes(car.id),
             sel = selectedCar === car.id,
-            aff = coins >= car.cost;
+            aff = khunoCoins >= car.cost;
           g.innerHTML += `<div class="car-card ${own ? "owned" : ""} ${sel ? "selected" : ""}" onclick="${own ? `selectCar('${car.id}')` : ""}">
-      <div class="car-icon">${car.icon}</div><div class="car-name">${car.name}</div>
-      <div class="car-stats">SPD ${car.maxSpeed} · ACC ${car.accel}<br>HP ${car.hp} · HND ${car.handling}<br>${car.desc}</div>
-      ${
-        own
-          ? sel
-            ? '<div class="shop-badge">✓ SELECTED</div>'
-            : '<div class="shop-badge" style="color:#aaa">OWNED</div>'
-          : `<button class="shop-buy" ${!aff ? "disabled" : ""} onclick="event.stopPropagation();buyCar('${car.id}')">${car.cost === 0 ? "FREE" : "🪙" + car.cost}</button>`
-      }
-    </div>`;
+        <div class="car-icon">${car.icon}</div><div class="car-name">${car.name}</div>
+        <div class="car-stats">SPD ${car.maxSpeed} · ACC ${car.accel}<br>HP ${car.hp} · HND ${car.handling}<br>${car.desc}</div>
+        ${
+          own
+            ? sel
+              ? '<div class="shop-badge">✓ SELECTED</div>'
+              : '<div class="shop-badge" style="color:#aaa">OWNED</div>'
+            : `<button class="shop-buy" ${!aff ? "disabled" : ""} onclick="event.stopPropagation();buyCar('${car.id}')">${car.cost === 0 ? "FREE" : car.cost + " K"}</button>`
+        }
+      </div>`;
         });
-        document.getElementById("garageCoins").textContent = "🪙 " + coins;
-        document.getElementById("titleCoins").textContent = "🪙 " + coins;
+        document.getElementById("garageCoins").textContent = khunoCoins;
+        document.getElementById("titleCoins").textContent = khunoCoins;
         renderTracks();
       }
       function selectCar(id) {
@@ -845,8 +897,9 @@
       }
       function buyCar(id) {
         const c = CARS.find((x) => x.id === id);
-        if (!c || ownedCars.includes(id) || coins < c.cost) return;
-        coins -= c.cost;
+        if (!c || ownedCars.includes(id) || khunoCoins < c.cost) return;
+        khunoCoins -= c.cost;
+        localStorage.setItem("khunoCoins", khunoCoins);
         ownedCars.push(id);
         selectedCar = id;
         save();
@@ -858,9 +911,9 @@
         g.innerHTML = "";
         TRACKS.forEach((t, i) => {
           g.innerHTML += `<div class="car-card ${currentTrack === i ? "selected" : "owned"}" onclick="currentTrack=${i};save();renderTracks()">
-            <div class="car-icon">${t.icon}</div><div class="car-name">${t.name}</div>
-            ${currentTrack === i ? '<div class="shop-badge">✓ SELECTED</div>' : ""}
-          </div>`;
+              <div class="car-icon">${t.icon}</div><div class="car-name">${t.name}</div>
+              ${currentTrack === i ? '<div class="shop-badge">✓ SELECTED</div>' : ""}
+            </div>`;
         });
       }
 
@@ -1745,9 +1798,22 @@
         });
         const player = racers.find((r) => r.isPlayer);
         const pos = player.finishPos;
-        const reward = REWARDS[pos - 1] || 0;
-        coins += reward;
+
+        // --- KHUNO Reward Logic ---
+        let khunoReward = 0;
+        if (pos === 1) khunoReward = 5;
+        else if (pos === 2) khunoReward = 4;
+        else if (pos === 3) khunoReward = 3;
+        else if (pos === 4) khunoReward = 2;
+        else if (pos === 5) khunoReward = 1;
+
+        khunoCoins += khunoReward;
+        localStorage.setItem("khunoCoins", khunoCoins);
+        document.getElementById("titleCoins").textContent = khunoCoins;
+        document.getElementById("garageCoins").textContent = khunoCoins;
         save();
+        // -------------------------
+
         const suf = ["st", "nd", "rd"][pos - 1] || "th";
         document.getElementById("resultTitle").textContent =
           pos <= 3 ? "🏆 " + pos + suf + " PLACE!" : "🏁 RACE COMPLETE";
@@ -1757,11 +1823,17 @@
           "You finished " + pos + suf + "!";
         let stand = "";
         finishOrder.forEach((r, i) => {
-          stand += `<div class="srow ${r.isPlayer ? "me" : ""}">${i + 1}. ${r.type.icon} ${r.type.name} ${r.isPlayer ? "(YOU)" : ""} — 🪙${REWARDS[i] || 0}</div>`;
+          let rwd = 0;
+          if (i === 0) rwd = 5;
+          else if (i === 1) rwd = 4;
+          else if (i === 2) rwd = 3;
+          else if (i === 3) rwd = 2;
+          else if (i === 4) rwd = 1;
+          stand += `<div class="srow ${r.isPlayer ? "me" : ""}">${i + 1}. ${r.type.icon} ${r.type.name} ${r.isPlayer ? "(YOU)" : ""} — ${rwd} K</div>`;
         });
         document.getElementById("resultStandings").innerHTML = stand;
-        document.getElementById("resultInfo").textContent =
-          "+" + reward + " 🪙 earned";
+        document.getElementById("resultInfo").innerHTML =
+          "+" + khunoReward + " 💰 KHUNO earned";
         document.getElementById("resultOverlay").classList.add("active");
       }
       function backToGarage() {
@@ -1837,7 +1909,7 @@
 
       // ── INIT ──
       load();
-      document.getElementById("titleCoins").textContent = "🪙 " + coins;
+      document.getElementById("titleCoins").textContent = khunoCoins;
       lastTime = performance.now();
       // Render loop for non-racing states
       function bgLoop() {
